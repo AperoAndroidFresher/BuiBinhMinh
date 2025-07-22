@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,26 +18,37 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ComposableOpenTarget
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.buibinhminh.ui.theme.BuiBinhMinhTheme
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +56,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BuiBinhMinhTheme {
-                ProfileNoEdit()
+                ProfileEdit()
             }
         }
     }
@@ -83,7 +95,7 @@ fun InformationField (title: String, placeholder: String, modifier: Modifier = M
 fun ProfileNoEdit () {
     Column (
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxHeight().background(Color(0xf0f4f9))
+        modifier = Modifier.fillMaxHeight().background(Color(0xfff0f4f9))
     ) {
         Box(
             modifier = Modifier.fillMaxWidth()
@@ -128,6 +140,8 @@ fun ProfileNoEdit () {
 }
 @Composable
 fun ProfileEdit () {
+    var showDialog by remember { mutableStateOf(false) }
+
     Column (
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxHeight().background(Color(0xFFF0F4F9))
@@ -165,7 +179,7 @@ fun ProfileEdit () {
 
         Spacer(modifier = Modifier.height(8.dp))
         Button(
-            onClick = { },
+            onClick = { showDialog = true },
             modifier = Modifier
                 .fillMaxWidth(0.5f)
                 .height(64.dp)
@@ -179,6 +193,65 @@ fun ProfileEdit () {
             Text(text = "Submit", fontSize = 18.sp)
         }
     }
+    if (showDialog) {
+        SuccessDialog(onDismissRequest = {
+            showDialog = false
+        })
+
+        LaunchedEffect(Unit) {
+            delay(2000)
+            showDialog = false 
+        }
+    }
+}
+
+@Composable
+fun SuccessDialog(onDismissRequest: () -> Unit){
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Card(
+            modifier = Modifier
+                .size(350.dp)
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column (
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.success_icon),
+                    contentDescription = "Avatar",
+                    modifier = Modifier.size(150.dp)
+                        .padding(16.dp)
+                )
+
+                Text(
+                    text = "Success!",
+                    textAlign = TextAlign.Center,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xff1b8c6a),
+                    modifier = Modifier.padding(8.dp, 0.dp)
+                )
+
+                Text(
+                    text = "Your information has been updated!",
+                    textAlign = TextAlign.Center,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+    }
+}
+@Preview(
+    showBackground = true
+)
+@Composable
+fun DialogPreview() {
+    SuccessDialog {}
 }
 @Preview(
     showBackground = true,
