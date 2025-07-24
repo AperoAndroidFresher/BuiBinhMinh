@@ -12,7 +12,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BuiBinhMinhTheme {
-                ProfileEdit()
+//                ProfileEdit()
+                Playlist()
             }
         }
     }
