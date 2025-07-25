@@ -73,5 +73,5 @@ fun PlaylistScreen() {
 )
 @Composable
 fun PlaylistReview() {
-    Playlist()
+    PlaylistScreen()
 }
