@@ -1,4 +1,4 @@
-package com.example.buibinhminh.Model
+package com.example.buibinhminh.data
 
 data class Student (
     val name: String = "",

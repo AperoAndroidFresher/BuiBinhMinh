@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.buibinhminh.ui.theme.BuiBinhMinhTheme
+import com.example.buibinhminh.ui.musicApp.PlaylistScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -12,8 +13,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BuiBinhMinhTheme {
-//                ProfileEdit()
-                Playlist()
+//                ProfileScreen()
+                PlaylistScreen()
             }
         }
     }
