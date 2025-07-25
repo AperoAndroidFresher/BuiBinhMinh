@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,12 +34,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.buibinhminh.R
 import com.example.buibinhminh.data.Student
+import com.example.buibinhminh.ui.theme.AppTheme
+import com.example.buibinhminh.ui.theme.ThemeType
+import com.example.buibinhminh.ui.theme.darkTheme
+import com.example.buibinhminh.ui.theme.lightTheme
 import kotlinx.coroutines.delay
 
 @Composable
-fun ProfileScreen () {
+fun ProfileScreen() {
     var isEditing by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
+    var currentTheme by remember { mutableStateOf(lightTheme) }
 
     var name by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
@@ -51,76 +57,109 @@ fun ProfileScreen () {
 
     val canSubmit = !isNameError && !isPhoneNumberError && !isUniversityNameError
 
-    Column (
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxHeight().background(Color(0xFFF0F4F9))
+    MaterialTheme(
+        colorScheme = currentTheme.color,
+        typography = currentTheme.typography,
     ) {
-        ProfileHeader(
-            isEditing = isEditing,
-            onEditClick = { isEditing = true }
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxHeight()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            ProfileHeader(
+                isEditing = isEditing,
+                onEditClick = { isEditing = true },
+                currentTheme = currentTheme,
+                onThemeChangeClick = {
+                    currentTheme = when (currentTheme.type) {
+                        ThemeType.THEME1 -> darkTheme
+                        ThemeType.THEME2 -> lightTheme
+                    }
+                }
+            )
 
-        Image(
-            painter = painterResource(id = R.drawable.meo),
-            contentDescription = "Avatar",
-            modifier = Modifier.size(200.dp)
-                .padding(25.dp)
-                .clip(CircleShape)
-                .border(2.dp, Color.Black, CircleShape)
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 0.dp)
-        ){
-            ProfileInformationField("NAME", "Enter your name...",
-                modifier = Modifier.weight(1f).padding(8.dp), 1,
-                "^[a-zA-Z]*$", "Only characters allowed" ,name, true, isEditing,
-                onValidationChange = { hasError -> isNameError = hasError })
-            ProfileInformationField("PHONE NUMBER","Your phone number...",
-                modifier = Modifier.weight(1f).padding(8.dp),1,
-                "^[0-9]*$","Only number allowed", phoneNumber, true, isEditing,
-                onValidationChange = { hasError -> isPhoneNumberError = hasError })
-        }
-        ProfileInformationField("UNIVERSITY NAME","Your university name...",
-            modifier = Modifier.padding(16.dp, 8.dp), 1,
-            "^[a-zA-Z]*$","Only characters allowed" , universityName, true, isEditing,
-            onValidationChange = { hasError -> isUniversityNameError = hasError })
-        ProfileInformationField("DESCRIBE YOURSELF","Enter a description about yourself...", modifier = Modifier.padding(16.dp, 8.dp), 10, description, isValidationEnabled =  false, isEditable = isEditing)
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if (isEditing){
-            Button(
-                onClick = {
-                    if(canSubmit) {
-                        val student = Student(
-                            name = name,
-                            phoneNumber = phoneNumber,
-                            universityName = universityName,
-                            description = description
-                        )
-
-                        println("Thông tin sinh viên đã tạo:")
-                        println(student)
-
-                        showDialog = true
-                    } },
-                enabled = canSubmit,
+            Image(
+                painter = painterResource(id = R.drawable.meo),
+                contentDescription = "Avatar",
                 modifier = Modifier
-                    .fillMaxWidth(0.5f)
-                    .height(64.dp)
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
-                )
+                    .size(200.dp)
+                    .padding(25.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 0.dp)
             ) {
-                Text(text = "Submit", fontSize = 18.sp)
+                ProfileInformationField(
+                    "NAME", "Enter your name...",
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(8.dp), 1,
+                    "^[a-zA-Z]*$", "Only characters allowed", name, true, isEditing,
+                    onValidationChange = { hasError -> isNameError = hasError })
+                ProfileInformationField(
+                    "PHONE NUMBER", "Your phone number...",
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(8.dp), 1,
+                    "^[0-9]*$", "Only number allowed", phoneNumber, true, isEditing,
+                    onValidationChange = { hasError -> isPhoneNumberError = hasError })
+            }
+            ProfileInformationField(
+                "UNIVERSITY NAME", "Your university name...",
+                modifier = Modifier.padding(16.dp, 8.dp), 1,
+                "^[a-zA-Z]*$", "Only characters allowed", universityName, true, isEditing,
+                onValidationChange = { hasError -> isUniversityNameError = hasError })
+            ProfileInformationField(
+                "DESCRIBE YOURSELF",
+                "Enter a description about yourself...",
+                modifier = Modifier.padding(16.dp, 8.dp),
+                5,
+                description,
+                isValidationEnabled = false,
+                isEditable = isEditing
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (isEditing) {
+                Button(
+                    onClick = {
+                        if (canSubmit) {
+                            val student = Student(
+                                name = name,
+                                phoneNumber = phoneNumber,
+                                universityName = universityName,
+                                description = description
+                            )
+
+                            println("Thông tin sinh viên đã tạo:")
+                            println(student)
+
+                            showDialog = true
+                        }
+                    },
+                    enabled = canSubmit,
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .height(64.dp)
+                        .padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceTint,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
+                    )
+                ) {
+                    Text(text = "Submit", fontSize = 18.sp)
+                }
             }
         }
     }
+
 
     if (showDialog) {
         SuccessDialog(onDismissRequest = {
@@ -151,5 +190,7 @@ fun ProfileScreen () {
 )
 @Composable
 fun ProfileNoEditPreview() {
-    ProfileScreen()
+    AppTheme {
+        ProfileScreen()
+    }
 }

@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,7 +40,7 @@ fun ProfileInformationField (
     ){
         Text(
             text = title,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.W500,
             modifier = Modifier.padding(bottom = 10.dp)
         )
@@ -59,6 +61,11 @@ fun ProfileInformationField (
                     }
                 }
             },
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                disabledContainerColor = MaterialTheme.colorScheme.onSecondary
+            ),
             readOnly = !isEditable,
             isError = isError,
             supportingText = {
