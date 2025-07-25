@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <style name="Theme.FinalAppSplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/bg_black</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/logo_app</item>
+        <item name="postSplashScreenTheme">@style/Theme.BuiBinhMinh</item>
+    </style>
     <style name="Theme.BuiBinhMinh" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>
