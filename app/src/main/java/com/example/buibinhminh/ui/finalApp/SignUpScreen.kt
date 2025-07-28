@@ -148,14 +148,24 @@ fun SignUpScreen(
 
         Button(
             onClick = {
-                if (userNameIsError) userName = ""
-                if (passwordIsError) password = ""
-                if (confirmPasswordIsError) passwordConfirmed = ""
-                if (emailIsError) email = ""
                 userNameIsError = !userName.matches("^[a-zA-Z0-9]+$".toRegex())
                 passwordIsError = !password.matches("^[a-zA-Z0-9]+$".toRegex())
                 confirmPasswordIsError = password != passwordConfirmed
                 emailIsError = ! email.matches("^[a-zA-Z0-9._-]+@apero\\.vn$".toRegex())
+
+                if (userNameIsError) {
+                    userName = ""
+                }
+                if (passwordIsError) {
+                    password = ""
+                }
+                if (confirmPasswordIsError) {
+                    passwordConfirmed = ""
+                }
+                if (emailIsError) {
+                    email = ""
+                }
+
                 if (!userNameIsError && !passwordIsError && !confirmPasswordIsError && !emailIsError) {
                     val newUser = User(userName, email, password)
                     onSignUpSuccess(newUser)

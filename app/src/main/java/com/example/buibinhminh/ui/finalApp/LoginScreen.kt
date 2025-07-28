@@ -47,7 +47,8 @@ fun LoginScreen(
     userList: List<User>,
     userName: String? = "",
     password: String? = "",
-    onSignUpClicked: () -> Unit
+    onSignUpClicked: () -> Unit,
+    onLoginSucess: () -> Unit
 ) {
     var userName by remember { mutableStateOf(userName) }
     var password by remember { mutableStateOf(password) }
@@ -131,7 +132,7 @@ fun LoginScreen(
             onClick = {
                 val user = userList.find { it.username == userName && it.password == password }
                 if (user != null) {
-                    Toast.makeText(context, "Login sucessful", Toast.LENGTH_SHORT).show()
+                    onLoginSucess()
                 } else {
                     Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
                 }
@@ -180,5 +181,5 @@ fun LoginScreen(
 )
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen(userList = mutableListOf(), onSignUpClicked = {})
+    LoginScreen(userList = mutableListOf(), onSignUpClicked = {}, onLoginSucess = {})
 }
