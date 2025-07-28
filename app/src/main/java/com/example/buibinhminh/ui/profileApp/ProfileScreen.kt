@@ -44,7 +44,7 @@ import kotlinx.coroutines.delay
 fun ProfileScreen() {
     var isEditing by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
-    var currentTheme by remember { mutableStateOf(lightTheme) }
+    var currentTheme by remember { mutableStateOf(darkTheme) }
 
     var name by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
