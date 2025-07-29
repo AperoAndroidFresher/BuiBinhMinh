@@ -19,9 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import coil.size.Size
 import com.example.buibinhminh.R
 
 @Composable
@@ -30,6 +33,8 @@ fun ProfileImageBox(
     currentImageUri: Uri?,
     onImageChange: (Uri?) -> Unit
 ) {
+    val context = LocalContext.current
+
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -37,8 +42,15 @@ fun ProfileImageBox(
     }
 
     Box{
+        val imagePainter = rememberAsyncImagePainter(
+            model = ImageRequest.Builder(context)
+                .data(currentImageUri ?: R.drawable.meo)
+                .size(Size(300, 300))
+                .crossfade(true)
+                .build()
+        )
         Image(
-            painter = if (currentImageUri != null) rememberAsyncImagePainter(currentImageUri) else painterResource(id = R.drawable.meo),
+            painter = imagePainter,
             contentDescription = "Avatar",
             contentScale = ContentScale.Crop,
             modifier = Modifier
