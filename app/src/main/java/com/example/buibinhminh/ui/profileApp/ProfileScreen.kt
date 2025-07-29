@@ -1,8 +1,7 @@
 package com.example.buibinhminh.ui.profileApp
 
-import androidx.compose.foundation.Image
+import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,8 +9,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -25,14 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.buibinhminh.R
 import com.example.buibinhminh.data.Student
 import com.example.buibinhminh.ui.theme.AppTheme
 import com.example.buibinhminh.ui.theme.ThemeType
@@ -42,7 +35,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun ProfileScreen() {
-    var isEditing by remember { mutableStateOf(false) }
+    var isEditing by remember { mutableStateOf(true) }
     var showDialog by remember { mutableStateOf(false) }
     var currentTheme by remember { mutableStateOf(darkTheme) }
 
@@ -50,6 +43,8 @@ fun ProfileScreen() {
     var phoneNumber by remember { mutableStateOf("") }
     var universityName by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var profileImageUri by remember { mutableStateOf<Uri?>(null) }
+
 
     var isNameError by remember { mutableStateOf(false) }
     var isPhoneNumberError by remember { mutableStateOf(false) }
@@ -79,14 +74,12 @@ fun ProfileScreen() {
                 }
             )
 
-            Image(
-                painter = painterResource(id = R.drawable.meo),
-                contentDescription = "Avatar",
-                modifier = Modifier
-                    .size(200.dp)
-                    .padding(25.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+            ProfileImageBox(
+                isEditing = isEditing,
+                currentImageUri = profileImageUri,
+                onImageChange = { newUri ->
+                    profileImageUri = newUri
+                }
             )
 
             Row(
@@ -137,7 +130,7 @@ fun ProfileScreen() {
                                 description = description
                             )
 
-                            println("Thông tin sinh viên đã tạo:")
+                            println("Profile Created")
                             println(student)
 
                             showDialog = true
