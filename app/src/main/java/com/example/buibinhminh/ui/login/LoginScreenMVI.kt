@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.finalApp
+package com.example.buibinhminh.ui.login
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -18,14 +18,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,27 +35,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Devices
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.buibinhminh.R
-import com.example.buibinhminh.data.User
+import com.example.buibinhminh.ui.finalApp.InputField
 
 @Composable
-fun LoginScreen(
-    userList: List<User>,
-    userName: String? = "",
-    password: String? = "",
-    onSignUpClicked: () -> Unit,
-    onLoginSuccess: () -> Unit
+fun LoginScreenMVI(
+    viewModel: LoginViewModel,
+    onLoginSuccess: () -> Unit,
+    onSignUpClicked: () -> Unit
 ) {
-    var userName by remember { mutableStateOf(userName) }
-    var password by remember { mutableStateOf(password) }
-
+    val viewState by viewModel.viewState.collectAsState()
     val context = LocalContext.current
-    var passwordVisible by remember { mutableStateOf(false) }
-    var isRemember by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.loginEvent.collect { event ->
+            when (event) {
+                is LoginEvent.ShowToast -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+                LoginEvent.NavigateToHomeScreen -> {
+                    onLoginSuccess()
+                }
+                LoginEvent.NavigateToSignUpScreen -> {
+                    onSignUpClicked()
+                }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .background(Color(0xFF121111))
@@ -78,29 +87,29 @@ fun LoginScreen(
                 fontSize = 28.sp,
                 color = Color.White,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp)
-                )
+            )
         }
 
         InputField(
-            value = userName.toString(),
-            onValueChange = { userName = it },
+            value = viewState.username,
+            onValueChange = { viewModel.processIntent(LoginIntent.UpdateUsername(it)) },
             label = "Username",
             leadingIcon = painterResource(id = R.drawable.outline_person_24)
         )
 
         InputField(
-            value = password.toString(),
-            onValueChange = { password = it },
+            value = viewState.password,
+            onValueChange = { viewModel.processIntent(LoginIntent.UpdatePassword(it)) },
             label = "Password",
             leadingIcon = painterResource(id = R.drawable.outline_lock_24),
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (viewState.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             trailingIcon = {
-                val imageResource = if (passwordVisible)
+                val imageResource = if (viewState.passwordVisible)
                     R.drawable.outline_visibility_24
                 else R.drawable.outline_visibility_off_24
 
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                IconButton(onClick = { viewModel.processIntent(LoginIntent.TogglePasswordVisibility) }) {
                     Icon(
                         painter = painterResource(id = imageResource),
                         contentDescription = "Toggle password visibility"
@@ -117,8 +126,8 @@ fun LoginScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(
-                checked = isRemember,
-                onCheckedChange = { isRemember = it },
+                checked = viewState.isRememberMe,
+                onCheckedChange = {  },
             )
             Text(
                 text = "Remember me",
@@ -129,14 +138,7 @@ fun LoginScreen(
         }
 
         Button(
-            onClick = {
-                val user = userList.find { it.username == userName && it.password == password }
-                if (user != null) {
-                    onLoginSuccess()
-                } else {
-                    Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
-                }
-            },
+            onClick = { viewModel.processIntent(LoginIntent.LoginClicked) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp, horizontal = 16.dp)
@@ -144,9 +146,14 @@ fun LoginScreen(
             shape = RoundedCornerShape(30.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF06a0b5)
-            )
+            ),
+            enabled = !viewState.isLoading
         ) {
-            Text(text = "Log in", fontSize = 16.sp)
+            if (viewState.isLoading) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+            } else {
+                Text(text = "Log in", fontSize = 16.sp)
+            }
         }
 
         Spacer(modifier = Modifier.weight(1f))
@@ -167,19 +174,10 @@ fun LoginScreen(
                 color = Color(0xFF61bbc8),
                 modifier = Modifier
                     .clickable{
-                        onSignUpClicked()
+                        viewModel.processIntent(LoginIntent.SignUpClicked)
                     }
             )
         }
-    }
-}
 
-@Preview(
-    showBackground = true,
-    device = Devices.PIXEL_4_XL,
-    showSystemUi = true
-)
-@Composable
-fun LoginScreenPreview() {
-    LoginScreen(userList = mutableListOf(), onSignUpClicked = {}, onLoginSuccess = {})
+    }
 }

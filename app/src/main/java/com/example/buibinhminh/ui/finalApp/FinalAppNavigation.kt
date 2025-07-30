@@ -26,12 +26,17 @@ import com.example.buibinhminh.Library
 import com.example.buibinhminh.Playlist
 import com.example.buibinhminh.Screen
 import com.example.buibinhminh.data.User
+import com.example.buibinhminh.ui.login.LoginScreenMVI
+import com.example.buibinhminh.ui.login.LoginViewModel
 import com.example.buibinhminh.ui.musicApp.PlaylistScreen
+import com.example.buibinhminh.ui.profile.ProfileScreenMVI
 import com.example.buibinhminh.ui.profileApp.ProfileScreen
+import com.example.buibinhminh.ui.signup.SignUpScreenMVI
 
 @Composable
 fun FinalAppNavigation() {
-    val userList = remember { mutableStateOf<List<User>>(emptyList()) }
+    val userList = listOf(User("test", "123","a"), User("admin", "admin","b"))
+    val updatedUserList = remember { mutableStateOf<List<User>>(userList) }
 
     val backStack = remember { mutableStateListOf<Screen>(Screen.Login()) }
     val bottomNavItems = listOf(Home, Library, Playlist)
@@ -78,23 +83,22 @@ fun FinalAppNavigation() {
             onBack = { backStack.removeLastOrNull() },
             entryProvider = entryProvider {
                 entry<Screen.Login> { (username, password) ->
-                    LoginScreen(
-                        userName = username,
-                        password = password,
-                        userList = userList.value,
+                    val viewModel = LoginViewModel(updatedUserList.value)
+                    LoginScreenMVI(
+                        viewModel = viewModel,
                         onSignUpClicked = {
                             backStack.add(Screen.SignUp())
                         },
-                        onLoginSucess = {
+                        onLoginSuccess = {
                             backStack.clear()
                             backStack.add(Screen.Home)
                         }
                     )
                 }
                 entry<Screen.SignUp> {
-                    SignUpScreen(
+                    SignUpScreenMVI(
                         onSignUpSuccess = { newUser ->
-                            userList.value = userList.value + newUser
+                            updatedUserList.value = updatedUserList.value + newUser
                             backStack.add(
                                 Screen.Login(
                                     username = newUser.username,
@@ -119,7 +123,7 @@ fun FinalAppNavigation() {
                     LibraryScreen()
                 }
                 entry<Screen.Profile> {
-                    ProfileScreen()
+                    ProfileScreenMVI()
                 }
             },
             transitionSpec = {

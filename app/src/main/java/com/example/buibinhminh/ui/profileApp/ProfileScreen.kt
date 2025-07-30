@@ -35,7 +35,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun ProfileScreen() {
-    var isEditing by remember { mutableStateOf(true) }
+    var isEditing by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var currentTheme by remember { mutableStateOf(darkTheme) }
 
@@ -140,7 +140,7 @@ fun ProfileScreen() {
                     modifier = Modifier
                         .fillMaxWidth(0.5f)
                         .height(64.dp)
-                        .padding(horizontal = 16.dp),
+                        .padding(16.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceTint,
