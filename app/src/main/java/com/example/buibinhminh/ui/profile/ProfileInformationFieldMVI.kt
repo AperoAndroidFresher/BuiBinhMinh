@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.profileApp
+package com.example.buibinhminh.ui.profile
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,11 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -20,21 +16,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun ProfileInformationField(
+fun ProfileInformationFieldMVI(
     title: String,
     placeholder: String,
     modifier: Modifier = Modifier,
     minLines: Int,
     regex: String = "",
     errorMessage: String = "",
-    initialValue: String = "",
+    value: String,
     isValidationEnabled: Boolean = true,
     isEditable: Boolean = true,
-    onValidationChange: (Boolean) -> Unit = {}
+    isError: Boolean,
+    onValueChange: (String) -> Unit,
+    onValidationChange: (Boolean) -> Unit
 ) {
-    var information by remember { mutableStateOf(initialValue) }
-    var isError by remember { mutableStateOf(false) }
-
     Column(
         modifier = modifier
     ) {
@@ -46,25 +41,27 @@ fun ProfileInformationField(
         )
 
         OutlinedTextField(
-            value = information,
-            onValueChange = { value ->
+            value = value,
+            onValueChange = { newValue ->
                 if (isEditable) {
-                    information = value
+                    onValueChange(newValue)
                     if (isValidationEnabled) {
-                        isError = !value.matches(regex.toRegex())
-                        onValidationChange(isError)
+                        val hasError = newValue.isNotEmpty() && !newValue.matches(regex.toRegex())
+                        onValidationChange(hasError)
                     } else {
-                        if (isError) {
-                            isError = false
-                            onValidationChange(false)
-                        }
+                        onValidationChange(false)
                     }
                 }
             },
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
                 focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
-                disabledContainerColor = MaterialTheme.colorScheme.onSecondary
+                disabledContainerColor = MaterialTheme.colorScheme.onSecondary,
+                errorContainerColor = MaterialTheme.colorScheme.errorContainer,
+                errorLeadingIconColor = MaterialTheme.colorScheme.error,
+                errorTrailingIconColor = MaterialTheme.colorScheme.error,
+                errorSupportingTextColor = MaterialTheme.colorScheme.error,
+                errorTextColor = MaterialTheme.colorScheme.error
             ),
             readOnly = !isEditable,
             isError = isError,
