@@ -10,7 +10,7 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
 import com.example.buibinhminh.data.Song
-import androidx.core.net.toUri
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 fun getAllMp3Files(context: Context): List<Song> {
@@ -77,18 +77,11 @@ fun getAllMp3Files(context: Context): List<Song> {
     return songs
 }
 
-fun getAlbumArtUri(albumId: Long): Uri {
-    return ContentUris.withAppendedId(
-        "content://media/external/audio/albumart".toUri(),
-        albumId
-    )
-}
-
 fun formatDuration(durationMillis: Long): String {
     val minutes = TimeUnit.MILLISECONDS.toMinutes(durationMillis)
     val seconds = TimeUnit.MILLISECONDS.toSeconds(durationMillis) -
             TimeUnit.MINUTES.toSeconds(minutes)
-    return String.format("%02d:%02d", minutes, seconds)
+    return String.format(Locale.ROOT, "%02d:%02d", minutes, seconds)
 }
 
 fun getEmbeddedThumbnail(songUri: Uri, context: Context): Bitmap? {

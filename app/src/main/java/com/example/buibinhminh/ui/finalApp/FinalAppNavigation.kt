@@ -29,6 +29,7 @@ import com.example.buibinhminh.data.User
 import com.example.buibinhminh.ui.login.LoginScreenMVI
 import com.example.buibinhminh.ui.login.LoginViewModel
 import com.example.buibinhminh.ui.musicApp.PlaylistScreen
+import com.example.buibinhminh.ui.playlist.PlaylistScreenMVI
 import com.example.buibinhminh.ui.profile.ProfileScreenMVI
 import com.example.buibinhminh.ui.profileApp.ProfileScreen
 import com.example.buibinhminh.ui.signup.SignUpScreenMVI
@@ -117,7 +118,7 @@ fun FinalAppNavigation() {
                     )
                 }
                 entry<Screen.Playlist>{
-                    PlaylistScreen()
+                    PlaylistScreenMVI()
                 }
                 entry<Screen.Library>{
                     LibraryScreen()
