@@ -35,7 +35,7 @@ import com.example.buibinhminh.ui.signup.SignUpScreenMVI
 
 @Composable
 fun FinalAppNavigation() {
-    val userList = listOf(User("test", "123","a"), User("admin", "admin","b"))
+    val userList = listOf(User("a", "123","a"), User("admin", "admin","b"))
     val updatedUserList = remember { mutableStateOf<List<User>>(userList) }
 
     val backStack = remember { mutableStateListOf<Screen>(Screen.Login()) }
