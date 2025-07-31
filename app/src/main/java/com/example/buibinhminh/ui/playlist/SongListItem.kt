@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.musicApp
+package com.example.buibinhminh.ui.playlist
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -11,31 +11,50 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.example.buibinhminh.R
 import com.example.buibinhminh.data.Song
+import com.example.buibinhminh.helper.formatDuration
+import com.example.buibinhminh.helper.getEmbeddedThumbnail
 
 @Composable
 fun SongListItem(
     song: Song,
     onDeleteClick: (Song) -> Unit
 ) {
+    val context = LocalContext.current
+    val thumbnailBitmap = remember(song.id) {
+        getEmbeddedThumbnail(song.contentUri, context)
+    }
+
+    val painter = if (thumbnailBitmap != null) {
+        rememberAsyncImagePainter(model = thumbnailBitmap)
+    } else {
+         painterResource(id = R.drawable.song)
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row {
+        Row (
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically
+        ){
             Image(
-                painter = painterResource(id = R.drawable.song),
+                painter = painter,
                 contentDescription = "Song",
                 modifier = Modifier
                     .padding(8.dp)
@@ -44,20 +63,25 @@ fun SongListItem(
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
+                    .weight(1f)
                     .padding(8.dp, 18.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = song.songName,
+                    text = song.title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = song.authorName,
+                    text = song.artist,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.Gray
+                    color = Color.Gray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -68,7 +92,7 @@ fun SongListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = song.duration,
+                text = formatDuration(song.duration),
                 fontSize = 17.sp,
                 color = Color.White
             )

@@ -21,21 +21,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.buibinhminh.ui.profileApp.ProfileHeader
-import com.example.buibinhminh.ui.profileApp.ProfileImageBox
-import com.example.buibinhminh.ui.profileApp.ProfileInformationField
-import com.example.buibinhminh.ui.profileApp.SuccessDialog
 
 @Composable
 fun ProfileScreenMVI(
     viewModel: ProfileViewModel = viewModel()
 ) {
     val viewState by viewModel.viewState.collectAsState()
-    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.profileEvent.collect { event ->
@@ -161,7 +155,7 @@ fun ProfileScreenMVI(
                     onClick = {
                         viewModel.processIntent(ProfileIntent.SubmitProfile)
                     },
-                    enabled = viewState.canSubmit, // Sử dụng canSubmit từ ViewState
+                    enabled = viewState.canSubmit,
                     modifier = Modifier
                         .fillMaxWidth(0.5f)
                         .height(64.dp)
