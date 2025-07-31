@@ -1,10 +1,9 @@
-package com.example.buibinhminh
+package com.example.buibinhminh.ui.navigation
 
 import androidx.annotation.DrawableRes
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.navigation3.runtime.NavKey
+import com.example.buibinhminh.R
+import com.example.buibinhminh.Screen
 
 interface BottomNavItem {
     @get:DrawableRes

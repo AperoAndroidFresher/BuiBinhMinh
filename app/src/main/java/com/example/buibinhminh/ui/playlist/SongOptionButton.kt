@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.musicApp
+package com.example.buibinhminh.ui.playlist
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

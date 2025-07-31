@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.finalApp
+package com.example.buibinhminh.ui.navigation
 
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -21,17 +21,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
-import com.example.buibinhminh.Home
-import com.example.buibinhminh.Library
-import com.example.buibinhminh.Playlist
 import com.example.buibinhminh.Screen
 import com.example.buibinhminh.data.User
+import com.example.buibinhminh.ui.home.HomeScreen
+import com.example.buibinhminh.ui.library.LibraryScreen
 import com.example.buibinhminh.ui.login.LoginScreenMVI
 import com.example.buibinhminh.ui.login.LoginViewModel
-import com.example.buibinhminh.ui.musicApp.PlaylistScreen
 import com.example.buibinhminh.ui.playlist.PlaylistScreenMVI
 import com.example.buibinhminh.ui.profile.ProfileScreenMVI
-import com.example.buibinhminh.ui.profileApp.ProfileScreen
 import com.example.buibinhminh.ui.signup.SignUpScreenMVI
 
 @Composable

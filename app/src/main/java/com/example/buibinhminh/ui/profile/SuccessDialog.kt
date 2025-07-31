@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.profileApp
+package com.example.buibinhminh.ui.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement

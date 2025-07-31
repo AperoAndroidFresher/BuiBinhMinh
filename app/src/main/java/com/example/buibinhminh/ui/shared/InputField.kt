@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.finalApp
+package com.example.buibinhminh.ui.shared
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding

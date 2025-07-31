@@ -24,9 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.buibinhminh.ui.profileApp.ProfileHeader
-import com.example.buibinhminh.ui.profileApp.ProfileImageBox
-import com.example.buibinhminh.ui.profileApp.SuccessDialog
 
 @Composable
 fun ProfileScreenMVI(

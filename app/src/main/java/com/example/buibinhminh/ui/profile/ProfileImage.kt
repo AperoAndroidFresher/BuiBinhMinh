@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.profileApp
+package com.example.buibinhminh.ui.profile
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult

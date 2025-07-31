@@ -38,7 +38,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.buibinhminh.R
-import com.example.buibinhminh.ui.finalApp.InputField
+import com.example.buibinhminh.ui.shared.InputField
 
 @Composable
 fun LoginScreenMVI(

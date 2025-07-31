@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.example.buibinhminh.ui.finalApp.FinalAppNavigation
+import com.example.buibinhminh.ui.navigation.FinalAppNavigation
 import com.example.buibinhminh.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {

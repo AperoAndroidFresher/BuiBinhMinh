@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.buibinhminh.R
 import com.example.buibinhminh.data.User
-import com.example.buibinhminh.ui.finalApp.InputField
+import com.example.buibinhminh.ui.shared.InputField
 
 @Composable
 fun SignUpScreenMVI(
