@@ -1,18 +1,19 @@
 package com.example.buibinhminh.ui.library
 
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +26,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.buibinhminh.R
+import com.example.buibinhminh.data.MenuOption
+import com.example.buibinhminh.data.Song
+import com.example.buibinhminh.helper.RequestStoragePermission
+import com.example.buibinhminh.ui.playlist.PlaylistListView
 
 @Preview(
     showBackground = true,
@@ -32,69 +39,138 @@ import androidx.compose.ui.unit.sp
 )
 @Composable
 fun LibraryScreen(
-    modifier: Modifier = Modifier
+    viewModel: LibraryViewModel = viewModel()
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xff121111))
-            .padding(16.dp, 32.dp, 16.dp, 16.dp),
-    ) {
-        Text(
-            text = "Library",
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
+    val state by viewModel.state.collectAsState()
+    val playlists by viewModel.playlists.collectAsState()
 
-        Row(
-            modifier = Modifier.fillMaxWidth(0.9f)
-                .align(Alignment.CenterHorizontally)
+    RequestStoragePermission {
+        LaunchedEffect(Unit) {
+            Log.d("MVI_DEBUG", "Library: LaunchedEffect - sending LoadSongs intent")
+            viewModel.processIntent(LibraryIntent.LoadSongs)
+        }
+
+        if (state.showAddToPlaylistDialog && state.selectedSongForPlaylist != null) {
+            AddToPlaylistDialog(
+                playlists = playlists,
+                onDismiss = { viewModel.processIntent(LibraryIntent.HideAddToPlaylistDialog) },
+                onPlaylistSelected = { playlist ->
+                    viewModel.processIntent(
+                        LibraryIntent.AddToPlaylist(
+                            song = state.selectedSongForPlaylist!!,
+                            playlistId = playlist.id
+                        )
+                    )
+                },
+                onAddPlaylist = {
+
+                }
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xff121111))
+                .padding(16.dp, 32.dp, 16.dp, 16.dp),
         ) {
+            Text(
+                text = "Library",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
 
-            var selectedButton by remember { mutableStateOf("Local") }
-            Button(
-                onClick = {
-                    selectedButton = "Local"
-                },
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(16.dp),
-                shape = RoundedCornerShape(15.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (selectedButton == "Local") Color(0xff00c2cb) else Color(0xff1e1e1e)
-                )
+                    .fillMaxWidth(0.9f)
+                    .align(Alignment.CenterHorizontally)
             ) {
-                Text(
-                    text = "Local",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.W500,
-                    modifier = Modifier.padding(4.dp)
-                )
+
+                var selectedButton by remember { mutableStateOf("Local") }
+                Button(
+                    onClick = {
+                        selectedButton = "Local"
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(15.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedButton == "Local") Color(0xff00c2cb) else Color(
+                            0xff1e1e1e
+                        )
+                    )
+                ) {
+                    Text(
+                        text = "Local",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W500,
+                        modifier = Modifier.padding(4.dp)
+                    )
+                }
+                Button(
+                    onClick = {
+                        selectedButton = "Remote"
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(15.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedButton == "Remote") Color(0xff00c2cb) else Color(
+                            0xff1e1e1e
+                        )
+                    )
+                ) {
+                    Text(
+                        text = "Remote",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W500,
+                        modifier = Modifier.padding(4.dp)
+                    )
+                }
             }
-            Button(
-                onClick = {
-                    selectedButton = "Remote"
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(16.dp),
-                shape = RoundedCornerShape(15.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (selectedButton == "Remote") Color(0xff00c2cb) else Color(0xff1e1e1e)
-                )
-            ) {
-                Text(
-                    text = "Remote",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.W500,
-                    modifier = Modifier.padding(4.dp)
-                )
+
+            when {
+                state.isLoading -> {
+                    Text("Loading songs...", modifier = Modifier.padding(16.dp), color = Color.White)
+                }
+                state.error != null -> {
+                    Text("Error: ${state.error}", modifier = Modifier.padding(16.dp), color = Color.Red)
+                }
+                state.isEmpty -> {
+                    Text("No MP3 files found on this device.", modifier = Modifier.padding(16.dp), color = Color.White)
+                }
+                else -> {
+                    val libraryOptionsProvider = remember {
+                        { song: Song ->
+                            listOf(
+                                MenuOption(
+                                    title = "Add to playlist",
+                                    icon = R.drawable.outline_playlist_add_24,
+                                    onClick = {
+                                        viewModel.processIntent(LibraryIntent.ShowAddToPlaylistDialog(song))
+                                    }
+                                ),
+                                MenuOption(
+                                    title = "Share",
+                                    icon = R.drawable.rounded_share_24,
+                                    onClick = {  }
+                                )
+                            )
+                        }
+                    }
+
+                    PlaylistListView(
+                        songs = state.songs,
+                        optionsProvider = libraryOptionsProvider
+                    )
+                }
             }
         }
     }
 }
-
 

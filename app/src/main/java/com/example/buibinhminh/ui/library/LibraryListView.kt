@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.playlist
+package com.example.buibinhminh.ui.library
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,11 +10,13 @@ import androidx.compose.ui.unit.dp
 import com.example.buibinhminh.R
 import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
+import com.example.buibinhminh.ui.playlist.SongListItem
 
 @Composable
-fun PlaylistListView(
+fun LibraryListView(
     songs: List<Song>,
-    optionsProvider: (Song) -> List<MenuOption>,
+    onShareClick: (Song) -> Unit,
+    onAddToPlaylistClick: (Song) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -24,11 +26,24 @@ fun PlaylistListView(
             songs,
             key = { index , song -> song.id }
         ) { index, song ->
-            val playlistOptions = remember(song) { optionsProvider(song) }
 
+            val libraryOptions = remember(song) {
+                listOf(
+                    MenuOption(
+                        title = "Remove from playlist",
+                        icon = R.drawable.outline_remove_circle_outline_24,
+                        onClick = {  }
+                    ),
+                    MenuOption(
+                        title = "Share",
+                        icon = R.drawable.rounded_share_24,
+                        onClick = { }
+                    )
+                )
+            }
             SongListItem(
                 song = song,
-                options = playlistOptions
+                options = libraryOptions
             )
         }
     }

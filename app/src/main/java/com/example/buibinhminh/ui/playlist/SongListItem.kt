@@ -33,7 +33,7 @@ import com.example.buibinhminh.ui.shared.GenericOptionMenu
 @Composable
 fun SongListItem(
     song: Song,
-    onDeleteClick: (Song) -> Unit
+    options: List<MenuOption>
 ) {
     val context = LocalContext.current
     val thumbnailBitmap = remember(song.id) {
@@ -44,21 +44,6 @@ fun SongListItem(
         rememberAsyncImagePainter(model = thumbnailBitmap)
     } else {
          painterResource(id = R.drawable.song)
-    }
-
-    val songOptions = remember(song) {
-        listOf(
-            MenuOption(
-                title = "Remove from playlist",
-                icon = R.drawable.outline_remove_circle_outline_24,
-                onClick = { onDeleteClick(song) }
-            ),
-            MenuOption(
-                title = "Share",
-                icon = R.drawable.rounded_share_24,
-                onClick = { }
-            )
-        )
     }
 
     Row(
@@ -115,7 +100,7 @@ fun SongListItem(
                 color = Color.White
             )
             GenericOptionMenu(
-                options = songOptions
+                options = options
             )
         }
     }

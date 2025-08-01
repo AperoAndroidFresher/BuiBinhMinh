@@ -34,8 +34,8 @@ import com.example.buibinhminh.ui.shared.GenericOptionMenu
 @Composable
 fun SongGridItem(
     song: Song,
-    onDeleteClick: (Song) -> Unit)
-{
+    options: List<MenuOption>
+) {
     val context = LocalContext.current
     val thumbnailBitmap = remember(song.id) {
         getEmbeddedThumbnail(song.contentUri, context)
@@ -45,21 +45,6 @@ fun SongGridItem(
         rememberAsyncImagePainter(model = thumbnailBitmap)
     } else {
         painterResource(id = R.drawable.song)
-    }
-
-    val songOptions = remember(song) {
-        listOf(
-            MenuOption(
-                title = "Remove from playlist",
-                icon = R.drawable.outline_remove_circle_outline_24,
-                onClick = { onDeleteClick(song) }
-            ),
-            MenuOption(
-                title = "Share",
-                icon = R.drawable.rounded_share_24,
-                onClick = { }
-            )
-        )
     }
 
     Column(
@@ -81,7 +66,7 @@ fun SongGridItem(
                     .clip(RoundedCornerShape(10.dp))
             )
             GenericOptionMenu(
-                options = songOptions,
+                options = options,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(top = 16.dp, end = 16.dp)

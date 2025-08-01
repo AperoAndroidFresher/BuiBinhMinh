@@ -12,8 +12,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.buibinhminh.R
+import com.example.buibinhminh.data.MenuOption
+import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.helper.RequestStoragePermission
 
 @Composable
@@ -51,15 +55,38 @@ fun PlaylistScreenMVI(
                         onSortClick = { }
                     )
 
+                    val playlistOptionsProvider = remember {
+                        { song: Song ->
+                            listOf(
+                                MenuOption(
+                                    title = "Remove from playlist",
+                                    icon = R.drawable.outline_remove_circle_outline_24,
+                                    onClick = {
+                                        viewModel.processIntent(
+                                            PlaylistIntent.DeleteSong(
+                                                song
+                                            )
+                                        )
+                                    }
+                                ),
+                                MenuOption(
+                                    title = "Share",
+                                    icon = R.drawable.rounded_share_24,
+                                    onClick = {  }
+                                )
+                            )
+                        }
+                    }
+
                     if (!state.isGridView) {
                         PlaylistListView(
                             songs = state.songs,
-                            onDeleteClick = { song -> viewModel.processIntent(PlaylistIntent.DeleteSong(song)) }
+                            optionsProvider = playlistOptionsProvider
                         )
                     } else {
                         PlaylistGrid(
                             songs = state.songs,
-                            onDeleteClick = { song -> viewModel.processIntent(PlaylistIntent.DeleteSong(song)) }
+                            optionsProvider = playlistOptionsProvider
                         )
                     }
                 }
