@@ -31,7 +31,7 @@ fun PlaylistHeader(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(20.dp)
             .height(32.dp),
         contentAlignment = Alignment.Center
     ) {

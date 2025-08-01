@@ -31,7 +31,7 @@ fun PlaylistScreenMVI(
         Column(
             modifier = Modifier
                 .background(Color(0xff121111))
-                .padding(top = 24.dp)
+                .padding(top = 16.dp)
                 .fillMaxSize()
         ) {
             when {
@@ -47,19 +47,19 @@ fun PlaylistScreenMVI(
                 else -> {
                     PlaylistHeader(
                         isGrid = state.isGridView,
-                        onToggleGrid = { viewModel.processIntent(PlaylistIntent.ToggleViewMode) }, // Send intent
+                        onToggleGrid = { viewModel.processIntent(PlaylistIntent.ToggleViewMode) },
                         onSortClick = { }
                     )
 
                     if (!state.isGridView) {
                         PlaylistListView(
                             songs = state.songs,
-                            onDeleteClick = { song -> viewModel.processIntent(PlaylistIntent.DeleteSong(song)) } // Send intent
+                            onDeleteClick = { song -> viewModel.processIntent(PlaylistIntent.DeleteSong(song)) }
                         )
                     } else {
                         PlaylistGrid(
                             songs = state.songs,
-                            onDeleteClick = { song -> viewModel.processIntent(PlaylistIntent.DeleteSong(song)) } // Send intent
+                            onDeleteClick = { song -> viewModel.processIntent(PlaylistIntent.DeleteSong(song)) }
                         )
                     }
                 }

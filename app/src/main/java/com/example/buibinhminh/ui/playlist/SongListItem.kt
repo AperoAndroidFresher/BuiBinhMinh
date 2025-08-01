@@ -24,9 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.buibinhminh.R
+import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.helper.formatDuration
 import com.example.buibinhminh.helper.getEmbeddedThumbnail
+import com.example.buibinhminh.ui.shared.GenericOptionMenu
 
 @Composable
 fun SongListItem(
@@ -43,6 +45,22 @@ fun SongListItem(
     } else {
          painterResource(id = R.drawable.song)
     }
+
+    val songOptions = remember(song) {
+        listOf(
+            MenuOption(
+                title = "Remove from playlist",
+                icon = R.drawable.outline_remove_circle_outline_24,
+                onClick = { onDeleteClick(song) }
+            ),
+            MenuOption(
+                title = "Share",
+                icon = R.drawable.rounded_share_24,
+                onClick = { }
+            )
+        )
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -96,10 +114,8 @@ fun SongListItem(
                 fontSize = 17.sp,
                 color = Color.White
             )
-            SongOptionButton(
-                song = song,
-                onDeleteClick = onDeleteClick,
-                modifier = Modifier.padding(start = 8.dp)
+            GenericOptionMenu(
+                options = songOptions
             )
         }
     }
