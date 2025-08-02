@@ -14,14 +14,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.buibinhminh.R
 
+@Preview(
+    showBackground = true,
+    showSystemUi = true
+)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    onProfileClick: () -> Unit,
+    onProfileClick: () -> Unit = {},
 ) {
     Box(
         modifier = modifier
@@ -33,9 +38,9 @@ fun HomeScreen(
         Text(
             text = "HOME",
             fontWeight = FontWeight.W500,
-            fontSize = 24.sp,
+            fontSize = 20.sp,
             color = Color.White,
-            modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp)
+            modifier = Modifier.padding(top = 4.dp)
         )
         Icon(
             painter = painterResource(id = R.drawable.outline_person_24),

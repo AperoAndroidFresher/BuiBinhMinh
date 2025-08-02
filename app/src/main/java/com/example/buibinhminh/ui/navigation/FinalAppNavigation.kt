@@ -18,24 +18,41 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.example.buibinhminh.Screen
+import com.example.buibinhminh.data.Playlist
 import com.example.buibinhminh.data.User
 import com.example.buibinhminh.ui.home.HomeScreen
 import com.example.buibinhminh.ui.library.LibraryScreen
+import com.example.buibinhminh.ui.library.libraryViewModel
 import com.example.buibinhminh.ui.login.LoginScreenMVI
 import com.example.buibinhminh.ui.login.LoginViewModel
-import com.example.buibinhminh.ui.playlist.PlaylistScreenMVI
+import com.example.buibinhminh.ui.myplaylist.MyPlaylistScreen
+import com.example.buibinhminh.ui.myplaylist.MyPlaylistViewModel
+import com.example.buibinhminh.ui.playlistSong.PlaylistScreenMVI
+import com.example.buibinhminh.ui.playlistSong.PlaylistViewModel
 import com.example.buibinhminh.ui.profile.ProfileScreenMVI
 import com.example.buibinhminh.ui.signup.SignUpScreenMVI
 
 @Composable
 fun FinalAppNavigation() {
     val userList = listOf(User("a", "123","a"), User("admin", "admin","b"))
-    val updatedUserList = remember { mutableStateOf<List<User>>(userList) }
+    val updatedUserList = remember { mutableStateOf(userList) }
 
+    val defaultPlaylists = listOf(
+        Playlist(
+            id = 1,
+            name = "My Mix",
+            songs = emptyList()
+        ),
+        Playlist(id = 2, name = "Chill", songs = emptyList())
+    )
+    val sharedPlaylists = remember { mutableStateOf(defaultPlaylists) }
     val backStack = remember { mutableStateListOf<Screen>(Screen.Login()) }
     val bottomNavItems = listOf(Home, Library, Playlist)
     Scaffold (
@@ -110,15 +127,45 @@ fun FinalAppNavigation() {
                     HomeScreen(
                         onProfileClick = {
                             backStack.clear()
-                            backStack.add(Screen.Profile)
+                            backStack.add(Screen.MyPlaylist)
                         }
                     )
                 }
-                entry<Screen.Playlist>{
-                    PlaylistScreenMVI()
+                entry<Screen.MyPlaylist>{
+                    val viewModel = MyPlaylistViewModel(sharedPlaylists)
+                    MyPlaylistScreen(
+                        viewModel = viewModel,
+                        onPlaylistClick = { playlist ->
+                            backStack.add(Screen.Playlist(playlist))
+                        }
+                    )
                 }
+                entry<Screen.Playlist>{ screen ->
+                    val shared = sharedPlaylists
+                    val factory = object : ViewModelProvider.Factory {
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            @Suppress("UNCHECKED_CAST")
+                            return PlaylistViewModel(shared, screen.playlist.id) as T
+                        }
+                    }
+                    val viewModel: PlaylistViewModel =
+                        viewModel(factory = factory)
+
+                    PlaylistScreenMVI(
+                        playlist = screen.playlist,
+                        viewModel = viewModel
+                    )
+                }
+
                 entry<Screen.Library>{
-                    LibraryScreen()
+                    val viewModel = libraryViewModel(sharedPlaylists = sharedPlaylists)
+
+                    LibraryScreen(
+                        viewModel = viewModel,
+                        onCreatePlaylist = {
+                            backStack.add(Screen.MyPlaylist)
+                        }
+                    )
                 }
                 entry<Screen.Profile> {
                     ProfileScreenMVI()

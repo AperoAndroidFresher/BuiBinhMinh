@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.playlist
+package com.example.buibinhminh.ui.playlistSong
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,15 +25,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.buibinhminh.R
+import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.helper.formatDuration
 import com.example.buibinhminh.helper.getEmbeddedThumbnail
+import com.example.buibinhminh.ui.shared.GenericOptionMenu
 
 @Composable
 fun SongGridItem(
     song: Song,
-    onDeleteClick: (Song) -> Unit)
-{
+    options: List<MenuOption>
+) {
     val context = LocalContext.current
     val thumbnailBitmap = remember(song.id) {
         getEmbeddedThumbnail(song.contentUri, context)
@@ -63,9 +65,8 @@ fun SongGridItem(
                     .padding(8.dp)
                     .clip(RoundedCornerShape(10.dp))
             )
-            SongOptionButton(
-                song = song,
-                onDeleteClick = onDeleteClick,
+            GenericOptionMenu(
+                options = options,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(top = 16.dp, end = 16.dp)
