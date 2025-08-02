@@ -27,5 +27,5 @@ data object Library: NavKey, BottomNavItem {
 data object Playlist: NavKey, BottomNavItem {
     override val iconResId: Int = R.drawable.outline_playlist_play_24
     override val tittle: String = "Playlist"
-    override val screen: Screen = Screen.Playlist
+    override val screen: Screen = Screen.MyPlaylist
 }

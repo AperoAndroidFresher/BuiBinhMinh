@@ -1,9 +1,8 @@
-package com.example.buibinhminh.ui.playlist
+package com.example.buibinhminh.ui.playlistSong
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -12,15 +11,13 @@ import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
 
 @Composable
-fun PlaylistGrid(
+fun PlaylistListView(
     songs: List<Song>,
     optionsProvider: (Song) -> List<MenuOption>,
     modifier: Modifier = Modifier
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        verticalArrangement = Arrangement.spacedBy(0.dp),
-        modifier = modifier
+    LazyColumn(
+        modifier = modifier.padding(horizontal = 16.dp)
     ) {
         itemsIndexed(
             songs,
@@ -28,7 +25,7 @@ fun PlaylistGrid(
         ) { index, song ->
             val playlistOptions = remember(song) { optionsProvider(song) }
 
-            SongGridItem(
+            SongListItem(
                 song = song,
                 options = playlistOptions
             )

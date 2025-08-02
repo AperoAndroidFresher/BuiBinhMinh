@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.playlist
+package com.example.buibinhminh.ui.playlistSong
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -23,6 +23,7 @@ import com.example.buibinhminh.R
 
 @Composable
 fun PlaylistHeader(
+    tittle: String,
     isGrid: Boolean,
     onToggleGrid: () -> Unit,
     onSortClick: () -> Unit,
@@ -36,7 +37,7 @@ fun PlaylistHeader(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "My Playlist",
+            text = tittle,
             color = Color.White,
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,

@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -31,18 +30,15 @@ import com.example.buibinhminh.R
 import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.helper.RequestStoragePermission
-import com.example.buibinhminh.ui.playlist.PlaylistListView
+import com.example.buibinhminh.ui.playlistSong.PlaylistListView
 
-@Preview(
-    showBackground = true,
-    showSystemUi = true
-)
 @Composable
 fun LibraryScreen(
-    viewModel: LibraryViewModel = viewModel()
+    viewModel: LibraryViewModel = viewModel(),
+    onCreatePlaylist: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val playlists by viewModel.playlists.collectAsState()
+    val playlists = viewModel.playlists
 
     RequestStoragePermission {
         LaunchedEffect(Unit) {
@@ -63,7 +59,7 @@ fun LibraryScreen(
                     )
                 },
                 onAddPlaylist = {
-
+                    onCreatePlaylist()
                 }
             )
         }

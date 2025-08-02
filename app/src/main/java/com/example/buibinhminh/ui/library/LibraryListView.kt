@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.example.buibinhminh.R
 import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
-import com.example.buibinhminh.ui.playlist.SongListItem
+import com.example.buibinhminh.ui.playlistSong.SongListItem
 
 @Composable
 fun LibraryListView(
