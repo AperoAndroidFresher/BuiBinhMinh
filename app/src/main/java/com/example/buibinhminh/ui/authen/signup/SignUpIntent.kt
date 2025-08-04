@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.signup
+package com.example.buibinhminh.ui.authen.signup
 
 sealed interface SignUpIntent {
     data class UpdateUsername(val username: String) : SignUpIntent

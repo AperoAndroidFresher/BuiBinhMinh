@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.login
+package com.example.buibinhminh.ui.authen.login
 
 data class LoginState(
     val username: String = "",

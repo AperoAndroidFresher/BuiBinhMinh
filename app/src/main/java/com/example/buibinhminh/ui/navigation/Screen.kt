@@ -1,4 +1,4 @@
-package com.example.buibinhminh
+package com.example.buibinhminh.ui.navigation
 
 sealed interface Screen {
     data object Home: Screen

@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.login
+package com.example.buibinhminh.ui.authen.login
 
 sealed interface LoginEvent { 
     data class ShowToast(val message: String) : LoginEvent

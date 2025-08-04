@@ -3,7 +3,7 @@ package com.example.buibinhminh.ui.navigation
 import androidx.annotation.DrawableRes
 import androidx.navigation3.runtime.NavKey
 import com.example.buibinhminh.R
-import com.example.buibinhminh.Screen
+import com.example.buibinhminh.ui.navigation.Screen
 
 interface BottomNavItem {
     @get:DrawableRes

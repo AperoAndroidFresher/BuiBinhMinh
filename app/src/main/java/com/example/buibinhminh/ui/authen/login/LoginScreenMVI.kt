@@ -1,10 +1,12 @@
-package com.example.buibinhminh.ui.signup
+package com.example.buibinhminh.ui.authen.login
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,14 +17,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,27 +37,40 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.buibinhminh.R
-import com.example.buibinhminh.data.User
 import com.example.buibinhminh.ui.shared.InputField
 
 @Composable
-fun SignUpScreenMVI(
-    viewModel: SignUpViewModel = viewModel(),
-    onSignUpSuccess: (User) -> Unit
+fun LoginScreenMVI(
+    viewModel: LoginViewModel,
+    initialUsername: String = "",
+    initialPassword: String = "",
+    onLoginSuccess: () -> Unit,
+    onSignUpClicked: () -> Unit
 ) {
     val viewState by viewModel.viewState.collectAsState()
     val context = LocalContext.current
 
+    LaunchedEffect(initialUsername, initialPassword) {
+        if (initialUsername.isNotEmpty()) {
+            viewModel.processIntent(LoginIntent.UpdateUsername(initialUsername))
+        }
+        if (initialPassword.isNotEmpty()) {
+            viewModel.processIntent(LoginIntent.UpdatePassword(initialPassword))
+        }
+    }
+
     LaunchedEffect(Unit) {
-        viewModel.signUpEvent.collect { event ->
+        viewModel.loginEvent.collect { event ->
             when (event) {
-                is SignUpEvent.ShowToast -> {
+                is LoginEvent.ShowToast -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
-                is SignUpEvent.NavigateToLoginScreen -> {
-                    onSignUpSuccess(event.newUser)
+                LoginEvent.NavigateToHomeScreen -> {
+                    onLoginSuccess()
+                }
+                LoginEvent.NavigateToSignUpScreen -> {
+                    onSignUpClicked()
                 }
             }
         }
@@ -77,7 +93,7 @@ fun SignUpScreenMVI(
             )
 
             Text(
-                text = "Sign up",
+                text = "Login to your account",
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
                 color = Color.White,
@@ -87,19 +103,15 @@ fun SignUpScreenMVI(
 
         InputField(
             value = viewState.username,
-            onValueChange = { viewModel.processIntent(SignUpIntent.UpdateUsername(it)) },
+            onValueChange = { viewModel.processIntent(LoginIntent.UpdateUsername(it)) },
             label = "Username",
-            isError = viewState.usernameError != null,
-            errorMessage = viewState.usernameError.toString(),
             leadingIcon = painterResource(id = R.drawable.outline_person_24)
         )
 
         InputField(
             value = viewState.password,
-            onValueChange = { viewModel.processIntent(SignUpIntent.UpdatePassword(it)) },
+            onValueChange = { viewModel.processIntent(LoginIntent.UpdatePassword(it)) },
             label = "Password",
-            isError = viewState.passwordError != null,
-            errorMessage = viewState.passwordError.toString(),
             leadingIcon = painterResource(id = R.drawable.outline_lock_24),
             visualTransformation = if (viewState.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -108,7 +120,7 @@ fun SignUpScreenMVI(
                     R.drawable.outline_visibility_24
                 else R.drawable.outline_visibility_off_24
 
-                IconButton(onClick = { viewModel.processIntent(SignUpIntent.TogglePasswordVisibility) }) {
+                IconButton(onClick = { viewModel.processIntent(LoginIntent.TogglePasswordVisibility) }) {
                     Icon(
                         painter = painterResource(id = imageResource),
                         contentDescription = "Toggle password visibility"
@@ -117,42 +129,27 @@ fun SignUpScreenMVI(
             }
         )
 
-        InputField(
-            value = viewState.passwordConfirmed,
-            onValueChange = { viewModel.processIntent(SignUpIntent.UpdatePasswordConfirmed(it)) },
-            label = "Confirm password",
-            isError = viewState.confirmPasswordError != null,
-            errorMessage = viewState.confirmPasswordError.toString(),
-            leadingIcon = painterResource(id = R.drawable.outline_lock_24),
-            visualTransformation = if (viewState.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            trailingIcon = {
-                val imageResource = if (viewState.passwordVisible)
-                    R.drawable.outline_visibility_24
-                else R.drawable.outline_visibility_off_24
-
-                IconButton(onClick = { viewModel.processIntent(SignUpIntent.TogglePasswordVisibility) }) {
-                    Icon(
-                        painter = painterResource(id = imageResource),
-                        contentDescription = "Toggle password visibility"
-                    )
-                }
-            }
-        )
-
-        InputField(
-            value = viewState.email,
-            onValueChange = { viewModel.processIntent(SignUpIntent.UpdateEmail(it)) },
-            label = "Email",
-            isError = viewState.emailError != null,
-            errorMessage = viewState.emailError.toString(),
-            leadingIcon = painterResource(id = R.drawable.outline_mail_24)
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(start = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = viewState.isRememberMe,
+                onCheckedChange = {  },
+            )
+            Text(
+                text = "Remember me",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 12.sp
+            )
+        }
 
         Button(
-            onClick = { viewModel.processIntent(SignUpIntent.SignUpClicked) },
+            onClick = { viewModel.processIntent(LoginIntent.LoginClicked) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp, horizontal = 16.dp)
@@ -166,8 +163,32 @@ fun SignUpScreenMVI(
             if (viewState.isLoading) {
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
             } else {
-                Text(text = "Sign up", fontSize = 16.sp)
+                Text(text = "Log in", fontSize = 16.sp)
             }
         }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Row (
+            modifier = Modifier.padding(bottom = 32.dp)
+        ) {
+            Text(
+                "Don't have an account? ",
+                fontWeight = FontWeight.W500,
+                fontSize = 16.sp,
+                color = Color.White
+            )
+            Text(
+                "Sign up",
+                fontWeight = FontWeight.W500,
+                fontSize = 16.sp,
+                color = Color(0xFF61bbc8),
+                modifier = Modifier
+                    .clickable{
+                        viewModel.processIntent(LoginIntent.SignUpClicked)
+                    }
+            )
+        }
+
     }
 }

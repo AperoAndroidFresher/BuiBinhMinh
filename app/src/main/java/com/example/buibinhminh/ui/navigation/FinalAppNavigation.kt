@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -24,25 +25,28 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
-import com.example.buibinhminh.Screen
 import com.example.buibinhminh.data.Playlist
 import com.example.buibinhminh.data.User
+import com.example.buibinhminh.database.AppDatabase
+import com.example.buibinhminh.repository.UserRepository
 import com.example.buibinhminh.ui.home.HomeScreen
 import com.example.buibinhminh.ui.library.LibraryScreen
 import com.example.buibinhminh.ui.library.libraryViewModel
-import com.example.buibinhminh.ui.login.LoginScreenMVI
-import com.example.buibinhminh.ui.login.LoginViewModel
+import com.example.buibinhminh.ui.authen.login.LoginScreenMVI
+import com.example.buibinhminh.ui.authen.login.LoginViewModel
 import com.example.buibinhminh.ui.myplaylist.MyPlaylistScreen
 import com.example.buibinhminh.ui.myplaylist.MyPlaylistViewModel
 import com.example.buibinhminh.ui.playlistSong.PlaylistScreenMVI
 import com.example.buibinhminh.ui.playlistSong.PlaylistViewModel
 import com.example.buibinhminh.ui.profile.ProfileScreenMVI
-import com.example.buibinhminh.ui.signup.SignUpScreenMVI
+import com.example.buibinhminh.ui.authen.signup.SignUpScreenMVI
+import com.example.buibinhminh.ui.authen.signup.SignUpViewModel
 
 @Composable
 fun FinalAppNavigation() {
-    val userList = listOf(User("a", "123","a"), User("admin", "admin","b"))
-    val updatedUserList = remember { mutableStateOf(userList) }
+    val context = LocalContext.current.applicationContext
+    val db = remember { AppDatabase.getInstance(context) }
+    val userRepository = remember { UserRepository(db.userDao()) }
 
     val defaultPlaylists = listOf(
         Playlist(
@@ -98,7 +102,9 @@ fun FinalAppNavigation() {
             onBack = { backStack.removeLastOrNull() },
             entryProvider = entryProvider {
                 entry<Screen.Login> { (username, password) ->
-                    val viewModel = LoginViewModel(updatedUserList.value)
+                    val viewModel: LoginViewModel = remember {
+                        LoginViewModel(userRepository)
+                    }
                     LoginScreenMVI(
                         viewModel = viewModel,
                         onSignUpClicked = {
@@ -111,13 +117,16 @@ fun FinalAppNavigation() {
                     )
                 }
                 entry<Screen.SignUp> {
+                    val viewModel: SignUpViewModel = remember {
+                        SignUpViewModel(userRepository)
+                    }
                     SignUpScreenMVI(
-                        onSignUpSuccess = { newUser ->
-                            updatedUserList.value = updatedUserList.value + newUser
+                        viewModel = viewModel,
+                        onSignUpSuccess = { newUserEntity ->
                             backStack.add(
                                 Screen.Login(
-                                    username = newUser.username,
-                                    password = newUser.password
+                                    username = newUserEntity.username,
+                                    password = newUserEntity.password
                                 )
                             )
                         }
