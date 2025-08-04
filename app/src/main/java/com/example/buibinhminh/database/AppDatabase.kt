@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.buibinhminh.database.converter.UriConverter
 import com.example.buibinhminh.database.dao.PlaylistDao
+import com.example.buibinhminh.database.dao.ProfileDao
 import com.example.buibinhminh.database.dao.SongDao
 import com.example.buibinhminh.database.dao.UserDao
 import com.example.buibinhminh.database.entity.PlaylistEntity
@@ -24,6 +25,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun playlistDao(): PlaylistDao
     abstract fun songDao(): SongDao
+    abstract fun profileDao(): ProfileDao
 
     companion object {
         @Volatile

@@ -1,5 +1,6 @@
 package com.example.buibinhminh.database.entity
 
+import android.net.Uri
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
@@ -21,5 +22,6 @@ data class ProfileEntity (
     val name: String = "",
     val phoneNumber: String = "",
     val universityName: String = "",
-    val description : String = ""
+    val description : String = "",
+    val imageUri: Uri? = null
 )
