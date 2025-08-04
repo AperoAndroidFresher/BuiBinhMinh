@@ -136,7 +136,7 @@ fun FinalAppNavigation() {
                     HomeScreen(
                         onProfileClick = {
                             backStack.clear()
-                            backStack.add(Screen.MyPlaylist)
+                            backStack.add(Screen.Profile)
                         }
                     )
                 }

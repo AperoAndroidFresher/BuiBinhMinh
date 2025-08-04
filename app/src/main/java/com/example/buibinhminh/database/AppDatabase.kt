@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.example.buibinhminh.database.converter.UriConverter
 import com.example.buibinhminh.database.dao.PlaylistDao
 import com.example.buibinhminh.database.dao.SongDao
 import com.example.buibinhminh.database.dao.UserDao
@@ -17,6 +19,7 @@ import com.example.buibinhminh.database.entity.UserEntity
     entities = [UserEntity::class, ProfileEntity::class, PlaylistEntity::class, SongEntity::class, PlaylistSongEntity::class],
     version = 1
 )
+@TypeConverters(UriConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun playlistDao(): PlaylistDao
