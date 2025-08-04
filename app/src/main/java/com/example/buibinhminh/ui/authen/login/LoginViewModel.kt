@@ -65,7 +65,7 @@ class LoginViewModel(
             if (user != null) {
                 _viewState.update { it.copy(isLoading = false, isLoginSuccess = true) }
                 _loginEvent.emit(LoginEvent.ShowToast("Login successful!"))
-                _loginEvent.emit(LoginEvent.NavigateToHomeScreen)
+                _loginEvent.emit(LoginEvent.NavigateToHomeScreen(user))
             } else {
                 _viewState.update { it.copy(isLoading = false, errorMessage = "Invalid username or password") }
                 _loginEvent.emit(LoginEvent.ShowToast("Login failed: Invalid username or password"))

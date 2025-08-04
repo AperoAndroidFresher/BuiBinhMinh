@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.buibinhminh.R
+import com.example.buibinhminh.database.entity.UserEntity
 import com.example.buibinhminh.ui.shared.InputField
 
 @Composable
@@ -45,7 +46,7 @@ fun LoginScreenMVI(
     viewModel: LoginViewModel,
     initialUsername: String = "",
     initialPassword: String = "",
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (UserEntity) -> Unit,
     onSignUpClicked: () -> Unit
 ) {
     val viewState by viewModel.viewState.collectAsState()
@@ -66,8 +67,8 @@ fun LoginScreenMVI(
                 is LoginEvent.ShowToast -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
-                LoginEvent.NavigateToHomeScreen -> {
-                    onLoginSuccess()
+                is LoginEvent.NavigateToHomeScreen -> {
+                    onLoginSuccess(event.user)
                 }
                 LoginEvent.NavigateToSignUpScreen -> {
                     onSignUpClicked()

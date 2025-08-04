@@ -3,6 +3,8 @@ package com.example.buibinhminh.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.buibinhminh.data.Student
+import com.example.buibinhminh.database.entity.ProfileEntity
+import com.example.buibinhminh.repository.ProfileRepository
 import com.example.buibinhminh.ui.theme.ThemeType
 import com.example.buibinhminh.ui.theme.darkTheme
 import com.example.buibinhminh.ui.theme.lightTheme
@@ -16,13 +18,33 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ProfileViewModel : ViewModel() {
+class ProfileViewModel(
+    private val userId: Int,
+    private val profileRepository: ProfileRepository
+) : ViewModel() {
 
     private val _viewState = MutableStateFlow(ProfileState())
     val viewState: StateFlow<ProfileState> = _viewState.asStateFlow()
 
     private val _profileEvent = MutableSharedFlow<ProfileEvent>()
     val profileEvent: SharedFlow<ProfileEvent> = _profileEvent.asSharedFlow()
+
+    init {
+        viewModelScope.launch {
+            val profile = profileRepository.getProfileByUserId(userId)
+            if (profile != null) {
+                _viewState.update {
+                    it.copy(
+                        name = profile.name,
+                        phoneNumber = profile.phoneNumber,
+                        universityName = profile.universityName,
+                        description = profile.description,
+                        profileImageUri = profile.imageUri
+                    )
+                }
+            }
+        }
+    }
 
     fun processIntent(intent: ProfileIntent) {
         when (intent) {
@@ -66,18 +88,20 @@ class ProfileViewModel : ViewModel() {
             ProfileIntent.SubmitProfile -> {
                 viewModelScope.launch {
                     _viewState.update { it.copy(isLoading = true) }
-                    delay(1000)
 
-                    val currentStudent = Student(
-                        name = _viewState.value.name,
-                        phoneNumber = _viewState.value.phoneNumber,
-                        universityName = _viewState.value.universityName,
-                        description = _viewState.value.description
+                    val currentProfile = _viewState.value
+                    val profileToSave = ProfileEntity(
+                        userId = userId,
+                        name = currentProfile.name,
+                        phoneNumber = currentProfile.phoneNumber,
+                        universityName = currentProfile.universityName,
+                        description = currentProfile.description,
+                        imageUri = currentProfile.profileImageUri
                     )
-                    println("Profile Created")
-                    println(currentStudent)
 
-                    _viewState.update { it.copy(isLoading = false) }
+                    profileRepository.saveProfile(profileToSave)
+
+                    _viewState.update { it.copy(isLoading = false, isEditing = false) }
                     _profileEvent.emit(ProfileEvent.ShowSuccessMessage)
                 }
             }
