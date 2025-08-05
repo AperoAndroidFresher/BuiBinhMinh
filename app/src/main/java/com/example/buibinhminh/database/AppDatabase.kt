@@ -18,7 +18,7 @@ import com.example.buibinhminh.database.entity.UserEntity
 
 @Database(
     entities = [UserEntity::class, ProfileEntity::class, PlaylistEntity::class, SongEntity::class, PlaylistSongEntity::class],
-    version = 1
+    version = 2
 )
 @TypeConverters(UriConverter::class)
 abstract class AppDatabase : RoomDatabase() {

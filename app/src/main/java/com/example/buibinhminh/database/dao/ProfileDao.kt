@@ -9,7 +9,7 @@ import com.example.buibinhminh.database.entity.ProfileEntity
 @Dao
 interface ProfileDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdateProfile(profile: ProfileEntity)
+    suspend fun insertOrUpdateProfile(profile: ProfileEntity) : Long
 
     @Query("SELECT * FROM profile WHERE userId = :userId LIMIT 1")
     suspend fun getProfileByUserId(userId: Int): ProfileEntity?

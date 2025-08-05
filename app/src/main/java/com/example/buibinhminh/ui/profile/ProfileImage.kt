@@ -1,5 +1,6 @@
 package com.example.buibinhminh.ui.profile
 
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,13 +39,17 @@ fun ProfileImageBox(
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
+        if (uri != null) {
+        val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        context.contentResolver.takePersistableUriPermission(uri, flag)
+    }
         onImageChange(uri)
     }
 
     Box{
         val imagePainter = rememberAsyncImagePainter(
             model = ImageRequest.Builder(context)
-                .data(currentImageUri ?: R.drawable.meo)
+                .data(currentImageUri ?: R.drawable.avatar)
                 .size(Size(300, 300))
                 .crossfade(true)
                 .build()

@@ -2,7 +2,6 @@ package com.example.buibinhminh.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.buibinhminh.data.Student
 import com.example.buibinhminh.database.entity.ProfileEntity
 import com.example.buibinhminh.repository.ProfileRepository
 import com.example.buibinhminh.ui.theme.ThemeType
@@ -35,6 +34,7 @@ class ProfileViewModel(
             if (profile != null) {
                 _viewState.update {
                     it.copy(
+                        profileId = profile.id,
                         name = profile.name,
                         phoneNumber = profile.phoneNumber,
                         universityName = profile.universityName,
@@ -91,6 +91,7 @@ class ProfileViewModel(
 
                     val currentProfile = _viewState.value
                     val profileToSave = ProfileEntity(
+                        id = currentProfile.profileId ?: 0,
                         userId = userId,
                         name = currentProfile.name,
                         phoneNumber = currentProfile.phoneNumber,
@@ -99,9 +100,14 @@ class ProfileViewModel(
                         imageUri = currentProfile.profileImageUri
                     )
 
-                    profileRepository.saveProfile(profileToSave)
+                    val newProfileId = profileRepository.saveProfile(profileToSave)
 
-                    _viewState.update { it.copy(isLoading = false, isEditing = false) }
+                    _viewState.update { it.copy(
+                        isLoading = false,
+                        isEditing = false,
+                        profileId = newProfileId.toInt()
+                    ) }
+
                     _profileEvent.emit(ProfileEvent.ShowSuccessMessage)
                 }
             }

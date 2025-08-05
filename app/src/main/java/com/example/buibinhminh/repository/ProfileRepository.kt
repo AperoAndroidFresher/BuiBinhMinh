@@ -8,7 +8,7 @@ class ProfileRepository(private val profileDao: ProfileDao) {
         return profileDao.getProfileByUserId(userId)
     }
 
-    suspend fun saveProfile(profile: ProfileEntity) {
-        profileDao.insertOrUpdateProfile(profile)
+    suspend fun saveProfile(profile: ProfileEntity) : Long {
+        return profileDao.insertOrUpdateProfile(profile)
     }
 }

@@ -11,6 +11,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,10 +27,12 @@ import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.example.buibinhminh.data.Playlist
+import androidx.compose.runtime.getValue
 import com.example.buibinhminh.data.User
 import com.example.buibinhminh.database.AppDatabase
 import com.example.buibinhminh.repository.ProfileRepository
 import com.example.buibinhminh.repository.UserRepository
+import com.example.buibinhminh.ui.authen.AuthViewModel
 import com.example.buibinhminh.ui.home.HomeScreen
 import com.example.buibinhminh.ui.library.LibraryScreen
 import com.example.buibinhminh.ui.library.libraryViewModel
@@ -48,6 +51,11 @@ import com.example.buibinhminh.ui.profile.ProfileViewModel
 fun FinalAppNavigation() {
     val context = LocalContext.current.applicationContext
     val db = remember { AppDatabase.getInstance(context) }
+
+    val authViewModel: AuthViewModel = viewModel()
+    val currentUser by authViewModel.currentUser.collectAsState()
+    val userId = currentUser?.id
+
     val userRepository = remember { UserRepository(db.userDao()) }
     val profileRepository = remember { ProfileRepository(db.profileDao()) }
 
@@ -62,38 +70,48 @@ fun FinalAppNavigation() {
     val sharedPlaylists = remember { mutableStateOf(defaultPlaylists) }
     val backStack = remember { mutableStateListOf<Screen>(Screen.Login()) }
     val bottomNavItems = listOf(Home, Library, Playlist)
+
     Scaffold (
         containerColor = Color(0xFF222222),
         bottomBar = {
             val currentScreen = backStack.lastOrNull()
             val showBottomNav = backStack.last() !is Screen.Login && backStack.last() !is Screen.SignUp
 
+
             if (showBottomNav) {
                 NavigationBar (
                     containerColor = Color(0xFF1A1A1A),
-
                 ) {
                     bottomNavItems.forEach { item ->
-                        NavigationBarItem(
-                            selected = false,
-                            onClick = {
-                                when (item) {
-                                    is BottomNavItemWithUser -> backStack.add(item.screen(userId))
-                                    is BottomNavItemWithScreen -> backStack.add(item.screen)
-                                }
-                            },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(item.iconResId),
-                                    contentDescription = "${item.tittle} icon",
-                                    modifier = Modifier.size(24.dp),
-                                    tint = if (selected) Color(0xFFBB86FC) else Color.White
-                                )
-                            },
-                            label = {
-                                Text(item.tittle, color = Color.White)
+                        if (userId != null) {
+                            val selected = when (currentScreen) {
+                                is Screen.Home -> item is Home
+                                is Screen.Library -> item is Library
+                                is Screen.MyPlaylist -> item is com.example.buibinhminh.ui.navigation.Playlist
+                                else -> false
                             }
-                        )
+
+                            NavigationBarItem(
+                                selected = selected,
+                                onClick = {
+                                    when (item) {
+                                        is BottomNavItemWithUser -> backStack.add(item.screen(userId))
+                                        is BottomNavItemWithScreen -> backStack.add(item.screen)
+                                    }
+                                },
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(item.iconResId),
+                                        contentDescription = "${item.tittle} icon",
+                                        modifier = Modifier.size(24.dp),
+                                        tint = if (selected) Color(0xFFBB86FC) else Color.White
+                                    )
+                                },
+                                label = {
+                                    Text(item.tittle, color = Color.White)
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -109,12 +127,14 @@ fun FinalAppNavigation() {
                     }
                     LoginScreenMVI(
                         viewModel = viewModel,
+                        authViewModel = authViewModel,
                         initialUsername = username,
                         initialPassword = password,
                         onSignUpClicked = {
                             backStack.add(Screen.SignUp())
                         },
                         onLoginSuccess = { user ->
+                            authViewModel.setLoggedInUser(user)
                             backStack.clear()
                             backStack.add(Screen.Home(userId = user.id))
                         }

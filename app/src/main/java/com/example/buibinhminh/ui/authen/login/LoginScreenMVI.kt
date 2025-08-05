@@ -39,11 +39,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.buibinhminh.R
 import com.example.buibinhminh.database.entity.UserEntity
+import com.example.buibinhminh.ui.authen.AuthViewModel
 import com.example.buibinhminh.ui.shared.InputField
 
 @Composable
 fun LoginScreenMVI(
     viewModel: LoginViewModel,
+    authViewModel: AuthViewModel,
     initialUsername: String = "",
     initialPassword: String = "",
     onLoginSuccess: (UserEntity) -> Unit,
