@@ -12,20 +12,40 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.buibinhminh.data.Playlist
+import com.example.buibinhminh.data.toSongEntity
+import com.example.buibinhminh.database.entity.toPlaylist
+import com.example.buibinhminh.database.relationships.toPlaylist
 import com.example.buibinhminh.helper.getAllMp3Files
+import com.example.buibinhminh.repository.PlaylistRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class LibraryViewModel (
     application: Application,
-    private val sharedPlaylists: MutableState<List<Playlist>>
+    private val playlistRepository: PlaylistRepository,
+    private val userId: Int
 ) : AndroidViewModel(application) {
     private val _state = MutableStateFlow(LibraryState())
     val state: StateFlow<LibraryState> = _state.asStateFlow()
-    val playlists: List<Playlist> get() = sharedPlaylists.value
+
+    private val _playlists = MutableStateFlow<List<Playlist>>(emptyList())
+    val playlists: StateFlow<List<Playlist>> = _playlists.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            playlistRepository.getPlaylistsWithSongsForUser(userId)
+                .map { playlistSongsList ->
+                    playlistSongsList.map { it.toPlaylist() }
+                }
+                .collect { updatedPlaylists ->
+                    _playlists.value = updatedPlaylists
+                }
+        }
+    }
 
     fun processIntent(intent: LibraryIntent) {
         when (intent) {
@@ -44,15 +64,17 @@ class LibraryViewModel (
             }
             is LibraryIntent.NavigateToCreatePlaylist -> navigateToCreatePlaylist()
             is LibraryIntent.AddToPlaylist -> {
-                val updated = sharedPlaylists.value.map { playlist ->
-                    if (playlist.id == intent.playlistId) {
-                        if (!playlist.songs.contains(intent.song)) {
-                            playlist.copy(songs = playlist.songs + intent.song)
-                        } else playlist
-                    } else playlist
+                viewModelScope.launch {
+                    val songEntity = intent.song.toSongEntity()
+
+                    playlistRepository.saveSong(songEntity)
+
+                    playlistRepository.addSongToPlaylist(
+                        playlistId = intent.playlistId,
+                        songId = songEntity.id
+                    )
+                    processIntent(LibraryIntent.HideAddToPlaylistDialog)
                 }
-                sharedPlaylists.value = updated
-                processIntent(LibraryIntent.HideAddToPlaylistDialog)
             }
         }
     }
@@ -79,15 +101,15 @@ class LibraryViewModel (
 
     }
 }
-
 class LibraryViewModelFactory(
     private val application: Application,
-    private val sharedPlaylists: MutableState<List<Playlist>>
+    private val playlistRepository: PlaylistRepository,
+    private val userId: Int
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LibraryViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return LibraryViewModel(application, sharedPlaylists) as T
+            return LibraryViewModel(application, playlistRepository, userId) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
@@ -95,11 +117,12 @@ class LibraryViewModelFactory(
 
 @Composable
 fun libraryViewModel(
-    sharedPlaylists: MutableState<List<Playlist>>
+    playlistRepository: PlaylistRepository,
+    userId: Int
 ): LibraryViewModel {
     val application = LocalContext.current.applicationContext as Application
-    val factory = remember(application, sharedPlaylists) {
-        LibraryViewModelFactory(application, sharedPlaylists)
+    val factory = remember(application, playlistRepository, userId) {
+        LibraryViewModelFactory(application, playlistRepository, userId)
     }
     return viewModel(factory = factory)
 }

@@ -3,6 +3,7 @@ package com.example.buibinhminh.database.entity
 import android.net.Uri
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.buibinhminh.data.Song
 
 @Entity(tableName = "songs")
 data class SongEntity (
@@ -13,3 +14,14 @@ data class SongEntity (
     val albumId: Long,
     val contentUri: Uri
 )
+
+fun SongEntity.toSong(): Song {
+    return Song(
+        id = this.id,
+        title = this.title,
+        artist = this.artist,
+        duration = this.duration,
+        albumId = this.albumId,
+        contentUri = this.contentUri
+    )
+}

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.buibinhminh.data.Playlist
 import com.example.buibinhminh.database.entity.PlaylistEntity
 import com.example.buibinhminh.database.entity.toPlaylist
+import com.example.buibinhminh.database.relationships.toPlaylist
 import com.example.buibinhminh.repository.PlaylistRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,9 +25,9 @@ class MyPlaylistViewModel(
 
     init {
         viewModelScope.launch {
-            playlistRepository.getPlaylistsForUser(userId)
-                .map { playlistEntities ->
-                    playlistEntities.map { it.toPlaylist() }
+            playlistRepository.getPlaylistsWithSongsForUser(userId)
+                .map { playlistSongsList ->
+                    playlistSongsList.map { it.toPlaylist() }
                 }
                 .collect { updatedPlaylists ->
                     _state.update { it.copy(playlists = updatedPlaylists) }

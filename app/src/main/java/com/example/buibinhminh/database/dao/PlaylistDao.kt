@@ -1,6 +1,7 @@
 package com.example.buibinhminh.database.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -18,12 +19,19 @@ interface PlaylistDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPlaylistSong(crossRef: PlaylistSongEntity)
 
+    @Delete
+    suspend fun deletePlaylistSong(crossRef: PlaylistSongEntity)
+
     @Transaction
     @Query("SELECT * FROM playlists WHERE id = :playlistId")
-    suspend fun getPlaylistWithSongs(playlistId: Int): PlaylistSongs
+    fun getPlaylistWithSongs(playlistId: Long): Flow<PlaylistSongs>
 
     @Query("SELECT * FROM playlists WHERE userId = :userId")
     fun getPlaylistsForUser(userId: Int): Flow<List<PlaylistEntity>>
+
+    @Transaction
+    @Query("SELECT * FROM playlists WHERE userId = :userId")
+    fun getPlaylistsWithSongsForUser(userId: Int): Flow<List<PlaylistSongs>>
 
     @Query("UPDATE playlists SET name = :newName WHERE id = :playlistId")
     suspend fun updatePlaylistName(playlistId: Long, newName: String)

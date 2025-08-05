@@ -1,5 +1,6 @@
 package com.example.buibinhminh.ui.navigation
 
+import android.app.Application
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -45,6 +46,7 @@ import com.example.buibinhminh.ui.playlistSong.PlaylistViewModel
 import com.example.buibinhminh.ui.profile.ProfileScreenMVI
 import com.example.buibinhminh.ui.authen.signup.SignUpScreenMVI
 import com.example.buibinhminh.ui.authen.signup.SignUpViewModel
+import com.example.buibinhminh.ui.library.LibraryViewModel
 import com.example.buibinhminh.ui.profile.ProfileViewModel
 
 @Composable
@@ -58,7 +60,7 @@ fun FinalAppNavigation() {
 
     val userRepository = remember { UserRepository(db.userDao()) }
     val profileRepository = remember { ProfileRepository(db.profileDao()) }
-    val playlistRepository = remember { PlaylistRepository(db.playlistDao()) }
+    val playlistRepository = remember { PlaylistRepository(db.playlistDao(), db.songDao()) }
 
 //    val defaultPlaylists = listOf(
 //        Playlist(
@@ -176,33 +178,32 @@ fun FinalAppNavigation() {
                         )
                     }
                 }
-//                entry<Screen.Playlist>{ screen ->
-//                    val shared = sharedPlaylists
-//                    val factory = object : ViewModelProvider.Factory {
-//                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-//                            @Suppress("UNCHECKED_CAST")
-//                            return PlaylistViewModel(shared, screen.playlist.id) as T
-//                        }
-//                    }
-//                    val viewModel: PlaylistViewModel =
-//                        viewModel(factory = factory)
-//
-//                    PlaylistScreenMVI(
-//                        playlist = screen.playlist,
-//                        viewModel = viewModel
-//                    )
-//                }
+                entry<Screen.Playlist>{ screen ->
+                    val factory = object : ViewModelProvider.Factory {
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            @Suppress("UNCHECKED_CAST")
+                            return PlaylistViewModel(playlistRepository, screen.playlist.id) as T
+                        }
+                    }
+                    val viewModel: PlaylistViewModel = viewModel(factory = factory)
 
-//                entry<Screen.Library>{
-//                    val viewModel = libraryViewModel(sharedPlaylists = sharedPlaylists)
-//
-//                    LibraryScreen(
-//                        viewModel = viewModel,
-//                        onCreatePlaylist = {
-//                            backStack.add(Screen.MyPlaylist)
-//                        }
-//                    )
-//                }
+                    PlaylistScreenMVI(
+                        playlist = screen.playlist,
+                        viewModel = viewModel
+                    )
+                }
+
+                entry<Screen.Library>{
+                    if (userId != null) {
+                        val viewModel = viewModel { LibraryViewModel(context as Application, playlistRepository, userId) }
+                        LibraryScreen(
+                            viewModel = viewModel,
+                            onCreatePlaylist = {
+                                backStack.add(Screen.MyPlaylist)
+                            }
+                        )
+                    }
+                }
                 entry<Screen.Profile> { (userId) ->
                     val viewModel = remember { ProfileViewModel(userId, profileRepository) }
                     ProfileScreenMVI(viewModel = viewModel)

@@ -38,7 +38,7 @@ fun LibraryScreen(
     onCreatePlaylist: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val playlists = viewModel.playlists
+    val playlists by viewModel.playlists.collectAsState()
 
     RequestStoragePermission {
         LaunchedEffect(Unit) {
