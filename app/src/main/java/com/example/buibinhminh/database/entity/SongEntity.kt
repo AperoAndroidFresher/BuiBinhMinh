@@ -1,18 +1,22 @@
-package com.example.buibinhminh.data
+package com.example.buibinhminh.database.entity
 
 import android.net.Uri
-import com.example.buibinhminh.database.entity.SongEntity
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.example.buibinhminh.data.Song
 
-data class Song(
-    val id: Long,
+@Entity(tableName = "songs")
+data class SongEntity (
+    @PrimaryKey val id: Long = 0,
     val title: String,
     val artist: String,
     val duration: Long,
     val albumId: Long,
     val contentUri: Uri
 )
-fun Song.toSongEntity(): SongEntity {
-    return SongEntity(
+
+fun SongEntity.toSong(): Song {
+    return Song(
         id = this.id,
         title = this.title,
         artist = this.artist,

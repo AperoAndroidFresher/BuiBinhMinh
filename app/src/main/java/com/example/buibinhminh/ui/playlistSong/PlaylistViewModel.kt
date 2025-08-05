@@ -3,37 +3,49 @@ package com.example.buibinhminh.ui.playlistSong
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.buibinhminh.data.Playlist
 import com.example.buibinhminh.data.Song
+import com.example.buibinhminh.database.entity.toSong
+import com.example.buibinhminh.repository.PlaylistRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class PlaylistViewModel(
-    private val sharedPlaylists: MutableState<List<Playlist>>,
+    private val playlistRepository: PlaylistRepository,
     private val playlistId: Long
 ) : ViewModel(){
     private val _state = MutableStateFlow(PlaylistState())
     val state: StateFlow<PlaylistState> = _state.asStateFlow()
+
     init {
-        val songs = sharedPlaylists.value
-            .firstOrNull { it.id == playlistId }
-            ?.songs.orEmpty()
-        _state.value = PlaylistState(songs = songs)
+        viewModelScope.launch {
+            playlistRepository.getPlaylistWithSongs(playlistId)
+                .map { playlistSongs ->
+                    playlistSongs.songs.map { it.toSong() }
+                }
+                .collect { songs ->
+                    _state.update {
+                        it.copy(
+                            songs = songs,
+                            isLoading = false,
+                        )
+                    }
+                }
+        }
     }
+
     fun processIntent(intent: PlaylistIntent) {
         when (intent) {
             is PlaylistIntent.SetPlaylist -> setPlaylist(intent.songs)
             PlaylistIntent.ToggleViewMode -> toggleViewMode()
             is PlaylistIntent.DeleteSong -> {
-                _state.update { st ->
-                    st.copy(songs = st.songs.filterNot { it.id == intent.song.id })
-                }
-                sharedPlaylists.value = sharedPlaylists.value.map { pl ->
-                    if (pl.id == playlistId) {
-                        pl.copy(songs = pl.songs.filterNot { it.id == intent.song.id })
-                    } else pl
+                viewModelScope.launch {
+                    playlistRepository.removeSongFromPlaylist(playlistId, intent.song.id)
                 }
             }
         }

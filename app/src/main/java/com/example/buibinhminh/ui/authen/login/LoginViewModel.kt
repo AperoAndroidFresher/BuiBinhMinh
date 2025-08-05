@@ -1,8 +1,8 @@
-package com.example.buibinhminh.ui.login
+package com.example.buibinhminh.ui.authen.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.buibinhminh.data.User
+import com.example.buibinhminh.repository.UserRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
-    private val userList: List<User>
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(LoginState())
@@ -59,12 +59,12 @@ class LoginViewModel(
 
             delay(1000)
 
-            val user = userList.find { it.username == username && it.password == password }
+            val user = userRepository.getUserByCredentials(username, password)
 
             if (user != null) {
                 _viewState.update { it.copy(isLoading = false, isLoginSuccess = true) }
                 _loginEvent.emit(LoginEvent.ShowToast("Login successful!"))
-                _loginEvent.emit(LoginEvent.NavigateToHomeScreen)
+                _loginEvent.emit(LoginEvent.NavigateToHomeScreen(user))
             } else {
                 _viewState.update { it.copy(isLoading = false, errorMessage = "Invalid username or password") }
                 _loginEvent.emit(LoginEvent.ShowToast("Login failed: Invalid username or password"))

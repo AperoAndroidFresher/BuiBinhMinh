@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.signup
+package com.example.buibinhminh.ui.authen.signup
 
 data class SignUpState(
     val username: String = "",

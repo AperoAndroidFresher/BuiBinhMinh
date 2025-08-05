@@ -1,5 +1,6 @@
 package com.example.buibinhminh.ui.navigation
 
+import android.app.Application
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -11,11 +12,13 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -24,70 +27,94 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
-import com.example.buibinhminh.Screen
 import com.example.buibinhminh.data.Playlist
-import com.example.buibinhminh.data.User
+import androidx.compose.runtime.getValue
+import com.example.buibinhminh.database.AppDatabase
+import com.example.buibinhminh.repository.PlaylistRepository
+import com.example.buibinhminh.repository.ProfileRepository
+import com.example.buibinhminh.repository.UserRepository
+import com.example.buibinhminh.ui.authen.AuthViewModel
 import com.example.buibinhminh.ui.home.HomeScreen
 import com.example.buibinhminh.ui.library.LibraryScreen
 import com.example.buibinhminh.ui.library.libraryViewModel
-import com.example.buibinhminh.ui.login.LoginScreenMVI
-import com.example.buibinhminh.ui.login.LoginViewModel
+import com.example.buibinhminh.ui.authen.login.LoginScreenMVI
+import com.example.buibinhminh.ui.authen.login.LoginViewModel
 import com.example.buibinhminh.ui.myplaylist.MyPlaylistScreen
 import com.example.buibinhminh.ui.myplaylist.MyPlaylistViewModel
 import com.example.buibinhminh.ui.playlistSong.PlaylistScreenMVI
 import com.example.buibinhminh.ui.playlistSong.PlaylistViewModel
 import com.example.buibinhminh.ui.profile.ProfileScreenMVI
-import com.example.buibinhminh.ui.signup.SignUpScreenMVI
+import com.example.buibinhminh.ui.authen.signup.SignUpScreenMVI
+import com.example.buibinhminh.ui.authen.signup.SignUpViewModel
+import com.example.buibinhminh.ui.library.LibraryViewModel
+import com.example.buibinhminh.ui.profile.ProfileViewModel
 
 @Composable
 fun FinalAppNavigation() {
-    val userList = listOf(User("a", "123","a"), User("admin", "admin","b"))
-    val updatedUserList = remember { mutableStateOf(userList) }
+    val context = LocalContext.current.applicationContext
+    val db = remember { AppDatabase.getInstance(context) }
 
-    val defaultPlaylists = listOf(
-        Playlist(
-            id = 1,
-            name = "My Mix",
-            songs = emptyList()
-        ),
-        Playlist(id = 2, name = "Chill", songs = emptyList())
-    )
-    val sharedPlaylists = remember { mutableStateOf(defaultPlaylists) }
+    val authViewModel: AuthViewModel = viewModel()
+    val currentUser by authViewModel.currentUser.collectAsState()
+    val userId = currentUser?.id
+
+    val userRepository = remember { UserRepository(db.userDao()) }
+    val profileRepository = remember { ProfileRepository(db.profileDao()) }
+    val playlistRepository = remember { PlaylistRepository(db.playlistDao(), db.songDao()) }
+
+//    val defaultPlaylists = listOf(
+//        Playlist(
+//            id = 1,
+//            name = "My Mix",
+//            songs = emptyList()
+//        ),
+//        Playlist(id = 2, name = "Chill", songs = emptyList())
+//    )
+//    val sharedPlaylists = remember { mutableStateOf(defaultPlaylists) }
     val backStack = remember { mutableStateListOf<Screen>(Screen.Login()) }
     val bottomNavItems = listOf(Home, Library, Playlist)
+
     Scaffold (
         containerColor = Color(0xFF222222),
         bottomBar = {
             val currentScreen = backStack.lastOrNull()
             val showBottomNav = backStack.last() !is Screen.Login && backStack.last() !is Screen.SignUp
 
+
             if (showBottomNav) {
                 NavigationBar (
                     containerColor = Color(0xFF1A1A1A),
-
                 ) {
                     bottomNavItems.forEach { item ->
-                        val selected = currentScreen == item.screen
-                        NavigationBarItem(
-                            selected = false,
-                            onClick = {
-                                if (currentScreen != item.screen) {
-                                    backStack.clear()
-                                    backStack.add(item.screen)
-                                }
-                            },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(item.iconResId),
-                                    contentDescription = "${item.tittle} icon",
-                                    modifier = Modifier.size(24.dp),
-                                    tint = if (selected) Color(0xFFBB86FC) else Color.White
-                                )
-                            },
-                            label = {
-                                Text(item.tittle, color = Color.White)
+                        if (userId != null) {
+                            val selected = when (currentScreen) {
+                                is Screen.Home -> item is Home
+                                is Screen.Library -> item is Library
+                                is Screen.MyPlaylist -> item is com.example.buibinhminh.ui.navigation.Playlist
+                                else -> false
                             }
-                        )
+
+                            NavigationBarItem(
+                                selected = selected,
+                                onClick = {
+                                    when (item) {
+                                        is BottomNavItemWithUser -> backStack.add(item.screen(userId))
+                                        is BottomNavItemWithScreen -> backStack.add(item.screen)
+                                    }
+                                },
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(item.iconResId),
+                                        contentDescription = "${item.tittle} icon",
+                                        modifier = Modifier.size(24.dp),
+                                        tint = if (selected) Color(0xFFBB86FC) else Color.White
+                                    )
+                                },
+                                label = {
+                                    Text(item.tittle, color = Color.White)
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -98,58 +125,67 @@ fun FinalAppNavigation() {
             onBack = { backStack.removeLastOrNull() },
             entryProvider = entryProvider {
                 entry<Screen.Login> { (username, password) ->
-                    val viewModel = LoginViewModel(updatedUserList.value)
+                    val viewModel: LoginViewModel = remember {
+                        LoginViewModel(userRepository)
+                    }
                     LoginScreenMVI(
                         viewModel = viewModel,
+                        authViewModel = authViewModel,
+                        initialUsername = username,
+                        initialPassword = password,
                         onSignUpClicked = {
                             backStack.add(Screen.SignUp())
                         },
-                        onLoginSuccess = {
+                        onLoginSuccess = { user ->
+                            authViewModel.setLoggedInUser(user)
                             backStack.clear()
-                            backStack.add(Screen.Home)
+                            backStack.add(Screen.Home(userId = user.id))
                         }
                     )
                 }
                 entry<Screen.SignUp> {
+                    val viewModel: SignUpViewModel = remember {
+                        SignUpViewModel(userRepository)
+                    }
                     SignUpScreenMVI(
-                        onSignUpSuccess = { newUser ->
-                            updatedUserList.value = updatedUserList.value + newUser
+                        viewModel = viewModel,
+                        onSignUpSuccess = { newUserEntity ->
                             backStack.add(
                                 Screen.Login(
-                                    username = newUser.username,
-                                    password = newUser.password
+                                    username = newUserEntity.username,
+                                    password = newUserEntity.password
                                 )
                             )
                         }
                     )
                 }
-                entry<Screen.Home> {
+                entry<Screen.Home> { (userId) ->
                     HomeScreen(
                         onProfileClick = {
                             backStack.clear()
-                            backStack.add(Screen.MyPlaylist)
+                            backStack.add(Screen.Profile(userId = userId))
                         }
                     )
                 }
                 entry<Screen.MyPlaylist>{
-                    val viewModel = MyPlaylistViewModel(sharedPlaylists)
-                    MyPlaylistScreen(
-                        viewModel = viewModel,
-                        onPlaylistClick = { playlist ->
-                            backStack.add(Screen.Playlist(playlist))
-                        }
-                    )
+                    if (userId != null) {
+                        val viewModel = MyPlaylistViewModel(playlistRepository, userId)
+                        MyPlaylistScreen(
+                            viewModel = viewModel,
+                            onPlaylistClick = { playlist ->
+                                backStack.add(Screen.Playlist(playlist))
+                            }
+                        )
+                    }
                 }
                 entry<Screen.Playlist>{ screen ->
-                    val shared = sharedPlaylists
                     val factory = object : ViewModelProvider.Factory {
                         override fun <T : ViewModel> create(modelClass: Class<T>): T {
                             @Suppress("UNCHECKED_CAST")
-                            return PlaylistViewModel(shared, screen.playlist.id) as T
+                            return PlaylistViewModel(playlistRepository, screen.playlist.id) as T
                         }
                     }
-                    val viewModel: PlaylistViewModel =
-                        viewModel(factory = factory)
+                    val viewModel: PlaylistViewModel = viewModel(factory = factory)
 
                     PlaylistScreenMVI(
                         playlist = screen.playlist,
@@ -158,17 +194,19 @@ fun FinalAppNavigation() {
                 }
 
                 entry<Screen.Library>{
-                    val viewModel = libraryViewModel(sharedPlaylists = sharedPlaylists)
-
-                    LibraryScreen(
-                        viewModel = viewModel,
-                        onCreatePlaylist = {
-                            backStack.add(Screen.MyPlaylist)
-                        }
-                    )
+                    if (userId != null) {
+                        val viewModel = viewModel { LibraryViewModel(context as Application, playlistRepository, userId) }
+                        LibraryScreen(
+                            viewModel = viewModel,
+                            onCreatePlaylist = {
+                                backStack.add(Screen.MyPlaylist)
+                            }
+                        )
+                    }
                 }
-                entry<Screen.Profile> {
-                    ProfileScreenMVI()
+                entry<Screen.Profile> { (userId) ->
+                    val viewModel = remember { ProfileViewModel(userId, profileRepository) }
+                    ProfileScreenMVI(viewModel = viewModel)
                 }
             },
             transitionSpec = {

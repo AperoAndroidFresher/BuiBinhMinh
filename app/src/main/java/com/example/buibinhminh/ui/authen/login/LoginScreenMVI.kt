@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.login
+package com.example.buibinhminh.ui.authen.login
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -38,16 +38,30 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.buibinhminh.R
+import com.example.buibinhminh.database.entity.UserEntity
+import com.example.buibinhminh.ui.authen.AuthViewModel
 import com.example.buibinhminh.ui.shared.InputField
 
 @Composable
 fun LoginScreenMVI(
     viewModel: LoginViewModel,
-    onLoginSuccess: () -> Unit,
+    authViewModel: AuthViewModel,
+    initialUsername: String = "",
+    initialPassword: String = "",
+    onLoginSuccess: (UserEntity) -> Unit,
     onSignUpClicked: () -> Unit
 ) {
     val viewState by viewModel.viewState.collectAsState()
     val context = LocalContext.current
+
+    LaunchedEffect(initialUsername, initialPassword) {
+        if (initialUsername.isNotEmpty()) {
+            viewModel.processIntent(LoginIntent.UpdateUsername(initialUsername))
+        }
+        if (initialPassword.isNotEmpty()) {
+            viewModel.processIntent(LoginIntent.UpdatePassword(initialPassword))
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.loginEvent.collect { event ->
@@ -55,8 +69,8 @@ fun LoginScreenMVI(
                 is LoginEvent.ShowToast -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
-                LoginEvent.NavigateToHomeScreen -> {
-                    onLoginSuccess()
+                is LoginEvent.NavigateToHomeScreen -> {
+                    onLoginSuccess(event.user)
                 }
                 LoginEvent.NavigateToSignUpScreen -> {
                     onSignUpClicked()

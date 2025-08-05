@@ -9,6 +9,7 @@ data class ProfileState(
     val showSuccessDialog: Boolean = false,
     val currentTheme: ThemeData = darkTheme,
 
+    val profileId: Int? = null,
     val name: String = "",
     val phoneNumber: String = "",
     val universityName: String = "",

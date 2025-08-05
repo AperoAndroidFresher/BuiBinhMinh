@@ -1,8 +1,9 @@
-package com.example.buibinhminh.ui.signup
+package com.example.buibinhminh.ui.authen.signup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.buibinhminh.data.User
+import com.example.buibinhminh.database.entity.UserEntity
+import com.example.buibinhminh.repository.UserRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +14,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class SignUpViewModel : ViewModel() {
+class SignUpViewModel(
+    private val userRepository: UserRepository
+) : ViewModel() {
 
     private val _viewState = MutableStateFlow(SignUpState())
     val viewState: StateFlow<SignUpState> = _viewState.asStateFlow()
@@ -55,6 +58,12 @@ class SignUpViewModel : ViewModel() {
             if (!currentState.email.matches("^[a-zA-Z0-9._-]+@apero\\.vn$".toRegex())) {
                 emailError = "Invalid format"
             }
+            if (usernameError == null && userRepository.getUserByUsername(currentState.username) != null) {
+                usernameError = "Username already exists."
+            }
+            if (emailError == null && userRepository.getUserByEmail(currentState.email) != null) {
+                emailError = "Email already exists."
+            }
 
             _viewState.update {
                 it.copy(
@@ -68,11 +77,15 @@ class SignUpViewModel : ViewModel() {
             if (usernameError == null && passwordError == null && confirmPasswordError == null && emailError == null) {
                 delay(1000)
 
-                val newUser = User(currentState.username, currentState.email, currentState.password)
-
+                val newUserEntity = UserEntity(
+                    username = currentState.username,
+                    email = currentState.email,
+                    password = currentState.password
+                )
+                userRepository.insertUser(newUserEntity)
                 _viewState.update { it.copy(isLoading = false) }
                 _signUpEvent.emit(SignUpEvent.ShowToast("Sign up successful!"))
-                _signUpEvent.emit(SignUpEvent.NavigateToLoginScreen(newUser))
+                _signUpEvent.emit(SignUpEvent.NavigateToLoginScreen(newUserEntity))
 
             } else {
                 _viewState.update { it.copy(isLoading = false) }

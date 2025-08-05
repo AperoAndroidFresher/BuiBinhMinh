@@ -1,4 +1,4 @@
-package com.example.buibinhminh.ui.signup
+package com.example.buibinhminh.ui.authen.signup
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -36,13 +36,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.buibinhminh.R
-import com.example.buibinhminh.data.User
+import com.example.buibinhminh.database.entity.UserEntity
 import com.example.buibinhminh.ui.shared.InputField
 
 @Composable
 fun SignUpScreenMVI(
-    viewModel: SignUpViewModel = viewModel(),
-    onSignUpSuccess: (User) -> Unit
+    viewModel: SignUpViewModel,
+    onSignUpSuccess: (UserEntity) -> Unit
 ) {
     val viewState by viewModel.viewState.collectAsState()
     val context = LocalContext.current
