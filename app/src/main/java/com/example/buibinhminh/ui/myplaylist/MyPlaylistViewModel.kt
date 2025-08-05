@@ -5,25 +5,31 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.buibinhminh.data.Playlist
+import com.example.buibinhminh.database.entity.PlaylistEntity
+import com.example.buibinhminh.database.entity.toPlaylist
+import com.example.buibinhminh.repository.PlaylistRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MyPlaylistViewModel(
-    private val sharedPlaylists: MutableState<List<Playlist>>
+    private val playlistRepository: PlaylistRepository,
+    private val userId: Int
 ) : ViewModel() {
     private val _state = MutableStateFlow(MyPlaylistState())
     val state: StateFlow<MyPlaylistState> = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
-            // snapshotFlow giúp biến Compose State thành một Flow
-            snapshotFlow { sharedPlaylists.value }
-                .collect { updatedList ->
-                    // Mỗi khi sharedPlaylists thay đổi, cập nhật lại state của UI
-                    _state.update { it.copy(playlists = updatedList) }
+            playlistRepository.getPlaylistsForUser(userId)
+                .map { playlistEntities ->
+                    playlistEntities.map { it.toPlaylist() }
+                }
+                .collect { updatedPlaylists ->
+                    _state.update { it.copy(playlists = updatedPlaylists) }
                 }
         }
     }
@@ -69,12 +75,9 @@ class MyPlaylistViewModel(
                 val playlistIdToRename = _state.value.renamePlaylistId
 
                  if (newName.isNotBlank() && playlistIdToRename != null) {
-                    val updatedPlaylists = sharedPlaylists.value.map { playlist ->
-                        if (playlist.id == playlistIdToRename) {
-                            playlist.copy(name = newName)
-                        } else playlist
-                    }
-                    sharedPlaylists.value = updatedPlaylists
+                     viewModelScope.launch {
+                         playlistRepository.updatePlaylistName(playlistIdToRename, newName)
+                     }
                 }
 
                _state.update {
@@ -89,23 +92,19 @@ class MyPlaylistViewModel(
             is MyPlaylistIntent.OnCreateConfirm -> {
                 val name = _state.value.newPlaylistName.trim()
                 if (name.isNotBlank()) {
-                    val newPlaylist = Playlist(
-                        id = System.currentTimeMillis(),
-                        name = name
-                    )
-                    sharedPlaylists.value = sharedPlaylists.value + newPlaylist
-                    _state.update {
-                        it.copy(
-                            isCreatingPlaylist = false,
-                            newPlaylistName = ""
-                        )
+                    viewModelScope.launch {
+                        val newPlaylistEntity = PlaylistEntity(name = name, userId = userId)
+                        val playlistId = playlistRepository.insertPlaylist(newPlaylistEntity)
+                        _state.update {
+                            it.copy(isCreatingPlaylist = false, newPlaylistName = "")
+                        }
                     }
                 }
             }
 
             is MyPlaylistIntent.OnDeletePlaylist -> {
-                sharedPlaylists.value = sharedPlaylists.value.filterNot {
-                    it.id == intent.playlistId
+                viewModelScope.launch {
+                    playlistRepository.deletePlaylist(intent.playlistId)
                 }
             }
 

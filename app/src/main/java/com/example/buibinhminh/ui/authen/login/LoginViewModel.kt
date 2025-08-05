@@ -2,7 +2,6 @@ package com.example.buibinhminh.ui.authen.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.buibinhminh.data.User
 import com.example.buibinhminh.repository.UserRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow

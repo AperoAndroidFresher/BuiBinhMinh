@@ -28,8 +28,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.example.buibinhminh.data.Playlist
 import androidx.compose.runtime.getValue
-import com.example.buibinhminh.data.User
 import com.example.buibinhminh.database.AppDatabase
+import com.example.buibinhminh.repository.PlaylistRepository
 import com.example.buibinhminh.repository.ProfileRepository
 import com.example.buibinhminh.repository.UserRepository
 import com.example.buibinhminh.ui.authen.AuthViewModel
@@ -58,16 +58,17 @@ fun FinalAppNavigation() {
 
     val userRepository = remember { UserRepository(db.userDao()) }
     val profileRepository = remember { ProfileRepository(db.profileDao()) }
+    val playlistRepository = remember { PlaylistRepository(db.playlistDao()) }
 
-    val defaultPlaylists = listOf(
-        Playlist(
-            id = 1,
-            name = "My Mix",
-            songs = emptyList()
-        ),
-        Playlist(id = 2, name = "Chill", songs = emptyList())
-    )
-    val sharedPlaylists = remember { mutableStateOf(defaultPlaylists) }
+//    val defaultPlaylists = listOf(
+//        Playlist(
+//            id = 1,
+//            name = "My Mix",
+//            songs = emptyList()
+//        ),
+//        Playlist(id = 2, name = "Chill", songs = emptyList())
+//    )
+//    val sharedPlaylists = remember { mutableStateOf(defaultPlaylists) }
     val backStack = remember { mutableStateListOf<Screen>(Screen.Login()) }
     val bottomNavItems = listOf(Home, Library, Playlist)
 
@@ -165,41 +166,43 @@ fun FinalAppNavigation() {
                     )
                 }
                 entry<Screen.MyPlaylist>{
-                    val viewModel = MyPlaylistViewModel(sharedPlaylists)
-                    MyPlaylistScreen(
-                        viewModel = viewModel,
-                        onPlaylistClick = { playlist ->
-                            backStack.add(Screen.Playlist(playlist))
-                        }
-                    )
-                }
-                entry<Screen.Playlist>{ screen ->
-                    val shared = sharedPlaylists
-                    val factory = object : ViewModelProvider.Factory {
-                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                            @Suppress("UNCHECKED_CAST")
-                            return PlaylistViewModel(shared, screen.playlist.id) as T
-                        }
+                    if (userId != null) {
+                        val viewModel = MyPlaylistViewModel(playlistRepository, userId)
+                        MyPlaylistScreen(
+                            viewModel = viewModel,
+                            onPlaylistClick = { playlist ->
+                                backStack.add(Screen.Playlist(playlist))
+                            }
+                        )
                     }
-                    val viewModel: PlaylistViewModel =
-                        viewModel(factory = factory)
-
-                    PlaylistScreenMVI(
-                        playlist = screen.playlist,
-                        viewModel = viewModel
-                    )
                 }
+//                entry<Screen.Playlist>{ screen ->
+//                    val shared = sharedPlaylists
+//                    val factory = object : ViewModelProvider.Factory {
+//                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//                            @Suppress("UNCHECKED_CAST")
+//                            return PlaylistViewModel(shared, screen.playlist.id) as T
+//                        }
+//                    }
+//                    val viewModel: PlaylistViewModel =
+//                        viewModel(factory = factory)
+//
+//                    PlaylistScreenMVI(
+//                        playlist = screen.playlist,
+//                        viewModel = viewModel
+//                    )
+//                }
 
-                entry<Screen.Library>{
-                    val viewModel = libraryViewModel(sharedPlaylists = sharedPlaylists)
-
-                    LibraryScreen(
-                        viewModel = viewModel,
-                        onCreatePlaylist = {
-                            backStack.add(Screen.MyPlaylist)
-                        }
-                    )
-                }
+//                entry<Screen.Library>{
+//                    val viewModel = libraryViewModel(sharedPlaylists = sharedPlaylists)
+//
+//                    LibraryScreen(
+//                        viewModel = viewModel,
+//                        onCreatePlaylist = {
+//                            backStack.add(Screen.MyPlaylist)
+//                        }
+//                    )
+//                }
                 entry<Screen.Profile> { (userId) ->
                     val viewModel = remember { ProfileViewModel(userId, profileRepository) }
                     ProfileScreenMVI(viewModel = viewModel)

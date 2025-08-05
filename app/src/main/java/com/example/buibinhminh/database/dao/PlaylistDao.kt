@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import com.example.buibinhminh.database.entity.PlaylistEntity
 import com.example.buibinhminh.database.entity.PlaylistSongEntity
 import com.example.buibinhminh.database.relationships.PlaylistSongs
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PlaylistDao {
@@ -21,7 +22,12 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlists WHERE id = :playlistId")
     suspend fun getPlaylistWithSongs(playlistId: Int): PlaylistSongs
 
-    @Transaction
     @Query("SELECT * FROM playlists WHERE userId = :userId")
-    suspend fun getPlaylistsForUser(userId: Int): List<PlaylistSongs>
+    fun getPlaylistsForUser(userId: Int): Flow<List<PlaylistEntity>>
+
+    @Query("UPDATE playlists SET name = :newName WHERE id = :playlistId")
+    suspend fun updatePlaylistName(playlistId: Long, newName: String)
+
+    @Query("DELETE FROM playlists WHERE id = :playlistId")
+    suspend fun deletePlaylist(playlistId: Long)
 }

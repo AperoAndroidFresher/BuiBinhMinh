@@ -16,12 +16,14 @@ class PlaylistViewModel(
 ) : ViewModel(){
     private val _state = MutableStateFlow(PlaylistState())
     val state: StateFlow<PlaylistState> = _state.asStateFlow()
+
     init {
         val songs = sharedPlaylists.value
             .firstOrNull { it.id == playlistId }
             ?.songs.orEmpty()
         _state.value = PlaylistState(songs = songs)
     }
+
     fun processIntent(intent: PlaylistIntent) {
         when (intent) {
             is PlaylistIntent.SetPlaylist -> setPlaylist(intent.songs)
