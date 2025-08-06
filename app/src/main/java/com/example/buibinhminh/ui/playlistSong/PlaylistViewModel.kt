@@ -1,17 +1,13 @@
 package com.example.buibinhminh.ui.playlistSong
 
 import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.buibinhminh.data.Playlist
-import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.database.entity.toSong
 import com.example.buibinhminh.repository.PlaylistRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 

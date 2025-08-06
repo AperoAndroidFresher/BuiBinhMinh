@@ -2,11 +2,13 @@ package com.example.buibinhminh.ui.library
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -30,7 +32,9 @@ import com.example.buibinhminh.R
 import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.helper.RequestStoragePermission
+import com.example.buibinhminh.ui.animation.LoadingAnimation
 import com.example.buibinhminh.ui.playlistSong.PlaylistListView
+import kotlinx.coroutines.delay
 
 @Composable
 fun LibraryScreen(
@@ -39,11 +43,16 @@ fun LibraryScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val playlists by viewModel.playlists.collectAsState()
+    var selectedButton by remember { mutableStateOf("Local") }
 
     RequestStoragePermission {
-        LaunchedEffect(Unit) {
+        LaunchedEffect(selectedButton) {
             Log.d("MVI_DEBUG", "Library: LaunchedEffect - sending LoadSongs intent")
-            viewModel.processIntent(LibraryIntent.LoadSongs)
+            if (selectedButton == "Local") {
+                viewModel.processIntent(LibraryIntent.LoadLocalSongs)
+            } else {
+                viewModel.processIntent(LibraryIntent.LoadRemoteSongs)
+            }
         }
 
         if (state.showAddToPlaylistDialog && state.selectedSongForPlaylist != null) {
@@ -84,8 +93,6 @@ fun LibraryScreen(
                     .fillMaxWidth(0.9f)
                     .align(Alignment.CenterHorizontally)
             ) {
-
-                var selectedButton by remember { mutableStateOf("Local") }
                 Button(
                     onClick = {
                         selectedButton = "Local"
@@ -132,7 +139,11 @@ fun LibraryScreen(
 
             when {
                 state.isLoading -> {
-                    Text("Loading songs...", modifier = Modifier.padding(16.dp), color = Color.White)
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        LoadingAnimation(modifier = Modifier.size(200.dp).align(Alignment.Center))
+                    }
                 }
                 state.error != null -> {
                     Text("Error: ${state.error}", modifier = Modifier.padding(16.dp), color = Color.Red)
