@@ -100,7 +100,7 @@ class LibraryViewModel(
                         isLoading = false,
                         error = "Failed to load songs: ${e.message}"
                     )
-                } 
+                }
             }
         }
     }
