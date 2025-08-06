@@ -25,15 +25,22 @@ class PlaylistViewModel(
     init {
         viewModelScope.launch {
             playlistRepository.getPlaylistWithSongs(playlistId)
-                .map { playlistSongs ->
-                    playlistSongs.songs.map { it.toSong() }
-                }
-                .collect { songs ->
-                    _state.update {
-                        it.copy(
-                            songs = songs,
-                            isLoading = false,
-                        )
+                .collect { playlistSongs ->
+                    if (playlistSongs != null && playlistSongs.playlist != null) {
+                        val songs = playlistSongs.songs.map { it.toSong() }
+                        _state.update {
+                            it.copy(
+                                songs = songs,
+                                isLoading = false,
+                            )
+                        }
+                    } else {
+                        _state.update {
+                            it.copy(
+                                songs = emptyList(),
+                                isLoading = false,
+                            )
+                        }
                     }
                 }
         }
@@ -41,22 +48,12 @@ class PlaylistViewModel(
 
     fun processIntent(intent: PlaylistIntent) {
         when (intent) {
-            is PlaylistIntent.SetPlaylist -> setPlaylist(intent.songs)
             PlaylistIntent.ToggleViewMode -> toggleViewMode()
             is PlaylistIntent.DeleteSong -> {
                 viewModelScope.launch {
                     playlistRepository.removeSongFromPlaylist(playlistId, intent.song.id)
                 }
             }
-        }
-    }
-
-    private fun setPlaylist(songs: List<Song>) {
-        _state.update {
-            it.copy(
-                songs = songs,
-                isLoading = false
-            )
         }
     }
 

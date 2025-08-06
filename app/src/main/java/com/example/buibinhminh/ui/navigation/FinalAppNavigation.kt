@@ -169,7 +169,7 @@ fun FinalAppNavigation() {
                 }
                 entry<Screen.MyPlaylist>{
                     if (userId != null) {
-                        val viewModel = MyPlaylistViewModel(playlistRepository, userId)
+                        val viewModel = viewModel { MyPlaylistViewModel(playlistRepository, userId) }
                         MyPlaylistScreen(
                             viewModel = viewModel,
                             onPlaylistClick = { playlist ->
@@ -185,8 +185,10 @@ fun FinalAppNavigation() {
                             return PlaylistViewModel(playlistRepository, screen.playlist.id) as T
                         }
                     }
-                    val viewModel: PlaylistViewModel = viewModel(factory = factory)
-
+                    val viewModel: PlaylistViewModel = viewModel(
+                        key = screen.playlist.id.toString(),
+                        factory = factory
+                    )
                     PlaylistScreenMVI(
                         playlist = screen.playlist,
                         viewModel = viewModel

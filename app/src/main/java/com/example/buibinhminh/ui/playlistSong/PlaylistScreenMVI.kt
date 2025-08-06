@@ -26,10 +26,6 @@ fun PlaylistScreenMVI(
 ) {
     val state by viewModel.state.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.processIntent(PlaylistIntent.SetPlaylist(playlist.songs))
-    }
-
     Column(
         modifier = Modifier
             .background(Color(0xff121111))
