@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.buibinhminh.R
+import com.example.buibinhminh.ui.animation.LoadingAnimation
 
 @Preview(
     showBackground = true,
@@ -51,6 +52,12 @@ fun HomeScreen(
                 .align(Alignment.TopEnd)
                 .padding(start = 4.dp)
                 .clickable { onProfileClick() }
+        )
+
+        LoadingAnimation(
+            modifier = Modifier
+                .size(200.dp)
+                .align(Alignment.Center)
         )
     }
 }

@@ -1,12 +1,16 @@
 package com.example.buibinhminh.ui.library
 
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -21,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -30,6 +35,7 @@ import com.example.buibinhminh.R
 import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.helper.RequestStoragePermission
+import com.example.buibinhminh.ui.animation.LoadingAnimation
 import com.example.buibinhminh.ui.playlistSong.PlaylistListView
 
 @Composable
@@ -39,11 +45,16 @@ fun LibraryScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val playlists by viewModel.playlists.collectAsState()
+    var selectedButton by remember { mutableStateOf("Local") }
 
     RequestStoragePermission {
-        LaunchedEffect(Unit) {
+        LaunchedEffect(selectedButton) {
             Log.d("MVI_DEBUG", "Library: LaunchedEffect - sending LoadSongs intent")
-            viewModel.processIntent(LibraryIntent.LoadSongs)
+            if (selectedButton == "Local") {
+                viewModel.processIntent(LibraryIntent.LoadLocalSongs)
+            } else {
+                viewModel.processIntent(LibraryIntent.LoadRemoteSongs)
+            }
         }
 
         if (state.showAddToPlaylistDialog && state.selectedSongForPlaylist != null) {
@@ -84,8 +95,6 @@ fun LibraryScreen(
                     .fillMaxWidth(0.9f)
                     .align(Alignment.CenterHorizontally)
             ) {
-
-                var selectedButton by remember { mutableStateOf("Local") }
                 Button(
                     onClick = {
                         selectedButton = "Local"
@@ -132,10 +141,42 @@ fun LibraryScreen(
 
             when {
                 state.isLoading -> {
-                    Text("Loading songs...", modifier = Modifier.padding(16.dp), color = Color.White)
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        LoadingAnimation(modifier = Modifier.size(200.dp).align(Alignment.Center))
+                    }
                 }
                 state.error != null -> {
-                    Text("Error: ${state.error}", modifier = Modifier.padding(16.dp), color = Color.Red)
+//                    Text("Error: ${state.error}", modifier = Modifier.padding(16.dp), color = Color.Red)
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.nothing),
+                            contentDescription = "No internet connection",
+                            modifier = Modifier.size(100.dp)
+                        )
+
+                        Text(
+                            text = "No internet connection, please check your connection again",
+                            fontSize = 28.sp,
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(16.dp, 24.dp)
+                        )
+
+                        Button(
+                            onClick = {
+                                viewModel.processIntent(LibraryIntent.LoadRemoteSongs)
+                            },
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) {
+                            Text(text = "Try again")
+                        }
+                    }
                 }
                 state.isEmpty -> {
                     Text("No MP3 files found on this device.", modifier = Modifier.padding(16.dp), color = Color.White)

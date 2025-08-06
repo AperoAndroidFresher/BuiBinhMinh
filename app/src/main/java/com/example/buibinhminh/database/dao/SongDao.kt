@@ -9,7 +9,7 @@ import com.example.buibinhminh.database.entity.SongEntity
 
 @Dao
 interface SongDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertSong(song: SongEntity)
 
     @Query("SELECT * FROM songs WHERE id = :songId")
