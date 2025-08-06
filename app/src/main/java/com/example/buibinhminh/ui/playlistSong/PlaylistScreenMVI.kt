@@ -37,74 +37,90 @@ fun PlaylistScreenMVI(
             .fillMaxSize()
     ) {
         when {
-            state.isLoading -> {
-                Text(
-                    "Loading songs...",
-                    modifier = Modifier.padding(16.dp),
-                    color = Color.White
-                )
-            }
+            state.isLoading -> LoadingScreen()
+            state.error != null -> ErrorScreen(errorMessage = state.error!!)
+            state.isEmpty -> EmptyPlaylistScreen()
+            else -> PlaylistContent(
+                playlist = playlist,
+                state = state,
+                viewModel = viewModel
+            )
+        }
+    }
+}
 
-            state.error != null -> {
-                Text(
-                    "Error: ${state.error}",
-                    modifier = Modifier.padding(16.dp),
-                    color = Color.Red
-                )
-            }
+@Composable
+fun LoadingScreen() {
+    Text(
+        "Loading songs...",
+        modifier = Modifier.padding(16.dp),
+        color = Color.White
+    )
+}
 
-            state.isEmpty -> {
-                Text(
-                    "Playlist is empty.",
-                    modifier = Modifier.padding(16.dp),
-                    color = Color.White
-                )
-            }
+@Composable
+fun ErrorScreen(errorMessage: String) {
+    Text(
+        "Error: $errorMessage",
+        modifier = Modifier.padding(16.dp),
+        color = Color.Red
+    )
+}
 
-            else -> {
-                PlaylistHeader(
-                    tittle = playlist.name,
-                    isGrid = state.isGridView,
-                    onToggleGrid = { viewModel.processIntent(PlaylistIntent.ToggleViewMode) },
-                    onSortClick = { }
-                )
+@Composable
+fun EmptyPlaylistScreen() {
+    Text(
+        "Playlist is empty.",
+        modifier = Modifier.padding(16.dp),
+        color = Color.White
+    )
+}
 
-                val playlistOptionsProvider = remember {
-                    { song: Song ->
-                        listOf(
-                            MenuOption(
-                                title = "Remove from playlist",
-                                icon = R.drawable.outline_remove_circle_outline_24,
-                                onClick = {
-                                    viewModel.processIntent(
-                                        PlaylistIntent.DeleteSong(
-                                            song
-                                        )
-                                    )
-                                }
-                            ),
-                            MenuOption(
-                                title = "Share",
-                                icon = R.drawable.rounded_share_24,
-                                onClick = { }
+@Composable
+fun PlaylistContent(
+    playlist: Playlist,
+    state: PlaylistState,
+    viewModel: PlaylistViewModel
+) {
+    PlaylistHeader(
+        tittle = playlist.name,
+        isGrid = state.isGridView,
+        onToggleGrid = { viewModel.processIntent(PlaylistIntent.ToggleViewMode) },
+        onSortClick = { /* TODO: Sort function */ }
+    )
+
+    val playlistOptionsProvider = remember {
+        { song: Song ->
+            listOf(
+                MenuOption(
+                    title = "Remove from playlist",
+                    icon = R.drawable.outline_remove_circle_outline_24,
+                    onClick = {
+                        viewModel.processIntent(
+                            PlaylistIntent.DeleteSong(
+                                song
                             )
                         )
                     }
-                }
-
-                if (!state.isGridView) {
-                    PlaylistListView(
-                        songs = state.songs,
-                        optionsProvider = playlistOptionsProvider
-                    )
-                } else {
-                    PlaylistGrid(
-                        songs = state.songs,
-                        optionsProvider = playlistOptionsProvider
-                    )
-                }
-            }
+                ),
+                MenuOption(
+                    title = "Share",
+                    icon = R.drawable.rounded_share_24,
+                    onClick = { }
+                )
+            )
         }
     }
 
+    if (!state.isGridView) {
+        PlaylistListView(
+            songs = state.songs,
+            optionsProvider = playlistOptionsProvider
+        )
+    } else {
+        PlaylistGrid(
+            songs = state.songs,
+            optionsProvider = playlistOptionsProvider
+        )
+    }
 }
