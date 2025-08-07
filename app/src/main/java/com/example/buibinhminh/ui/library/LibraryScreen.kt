@@ -147,7 +147,7 @@ fun LibraryScreen(
                         LoadingAnimation(modifier = Modifier.size(200.dp).align(Alignment.Center))
                     }
                 }
-                state.error != null -> {
+                state.error != null && state.songs.isEmpty()-> {
 //                    Text("Error: ${state.error}", modifier = Modifier.padding(16.dp), color = Color.Red)
                     Column(
                         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -161,7 +161,7 @@ fun LibraryScreen(
                         )
 
                         Text(
-                            text = "No internet connection, please check your connection again",
+                            text = state.error!!,
                             fontSize = 28.sp,
                             color = Color.White,
                             textAlign = TextAlign.Center,

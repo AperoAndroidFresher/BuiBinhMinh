@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp") version "2.0.21-1.0.27"
+    kotlin("plugin.serialization") version "1.9.23"
 }
 
 android {
@@ -67,6 +68,8 @@ dependencies {
     implementation(libs.okhttp)
 
     implementation(libs.lottie.compose)
+
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

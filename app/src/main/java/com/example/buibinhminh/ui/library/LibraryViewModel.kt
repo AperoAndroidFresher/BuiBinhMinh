@@ -1,29 +1,25 @@
 package com.example.buibinhminh.ui.library
 
 import android.app.Application
-import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.buibinhminh.data.Playlist
-import com.example.buibinhminh.data.SongDto
 import com.example.buibinhminh.data.toSong
 import com.example.buibinhminh.data.toSongEntity
 import com.example.buibinhminh.database.relationships.toPlaylist
 import com.example.buibinhminh.helper.getAllMp3Files
 import com.example.buibinhminh.repository.PlaylistRepository
 import com.example.buibinhminh.retrofit.ApiClient
+import com.example.buibinhminh.storage.readSavedSongsFromInternalStorage
 import com.example.buibinhminh.storage.saveFileToInternalStorage
-import kotlinx.coroutines.Dispatchers
+import com.example.buibinhminh.storage.saveSongMetadata
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class LibraryViewModel(
     application: Application,
@@ -106,9 +102,14 @@ class LibraryViewModel(
         }
     }
 
+
     private suspend fun loadRemoteSongs() {
         _state.update { it.copy(isLoading = true, error = null) }
+        val savedSongs = readSavedSongsFromInternalStorage(getApplication())
 
+        if (savedSongs.isNotEmpty()) {
+            _state.update { it.copy(songs = savedSongs, isLoading = false) }
+        }
         try {
             val response = ApiClient.build().getSongs()
 
@@ -128,14 +129,32 @@ class LibraryViewModel(
                         isLoading = false
                     )
                 }
+
+                if(downloadedSongs.isNotEmpty()) {
+                    saveSongMetadata(getApplication(),downloadedSongs)
+                }
             } else {
-                _state.update {
-                    it.copy(isLoading = false, error = "API failed with code: ${response.code()}")
+                if (savedSongs.isEmpty()) {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = "API failed with code: ${response.code()}"
+                        )
+                    }
+                } else {
+                    _state.update { it.copy(isLoading = false) }
                 }
             }
         } catch (e: Exception) {
-            _state.update {
-                it.copy(isLoading = false, error = "Network request failed: ${e.message}")
+            if (savedSongs.isEmpty()) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "No internet connection and no saved data"
+                    )
+                }
+            } else {
+                _state.update { it.copy(isLoading = false) }
             }
         }
     }
