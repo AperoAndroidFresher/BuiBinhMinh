@@ -13,6 +13,7 @@ import com.example.buibinhminh.database.relationships.toPlaylist
 import com.example.buibinhminh.helper.getAllMp3Files
 import com.example.buibinhminh.repository.PlaylistRepository
 import com.example.buibinhminh.retrofit.ApiClient
+import com.example.buibinhminh.storage.saveFileToInternalStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,7 +51,7 @@ class LibraryViewModel(
     fun processIntent(intent: LibraryIntent) {
         when (intent) {
             LibraryIntent.LoadLocalSongs -> loadLocalSongs()
-            LibraryIntent.LoadRemoteSongs -> loadRemoteSongs()
+            LibraryIntent.LoadRemoteSongs -> viewModelScope.launch { loadRemoteSongs()}
             is LibraryIntent.ShowAddToPlaylistDialog -> _state.update {
                 it.copy(
                     showAddToPlaylistDialog = true,
@@ -105,57 +106,37 @@ class LibraryViewModel(
         }
     }
 
-    private fun loadRemoteSongs() {
+    private suspend fun loadRemoteSongs() {
         _state.update { it.copy(isLoading = true, error = null) }
 
-        viewModelScope.launch(Dispatchers.IO) {
-            val call = ApiClient.build().getSongs()
-            call.enqueue(object : Callback<List<SongDto>> {
-                override fun onResponse(
-                    call: Call<List<SongDto>?>,
-                    response: Response<List<SongDto>?>
-                ) {
-                    when {
-                        response.isSuccessful -> {
-                            val songDto = response.body()
-                            val songs = songDto?.map { it.toSong() } ?: emptyList()
-                            _state.update {
-                                it.copy(
-                                    songs = songs,
-                                    isLoading = false
-                                )
-                            }
-                        }
+        try {
+            val response = ApiClient.build().getSongs()
 
-                        response.code() == 400 -> {} //Bad Request
-                        response.code() == 401 -> {} //Unauthorized
-                        response.code() == 403 -> {} //Forbidden
-                        response.code() == 404 -> {} //Not Found
-                        response.code() == 500 -> {} //Internal Server Error
-                        else -> {
-                            _state.update {
-                                it.copy(
-                                    isLoading = false,
-                                    error = "API failed with code: ${response.code()}"
-                                )
-                            }
-                        }
-                    }
+            if (response.isSuccessful) {
+                val songDtos = response.body() ?: emptyList()
+                val downloadedSongs = songDtos.map { songDto ->
+                    val song = songDto.toSong()
+                    val songFileResponse = ApiClient.build().downloadSong(song.contentUri.toString())
+                    val savedUri =
+                        saveFileToInternalStorage(getApplication(), song, songFileResponse)
+                    song.copy(contentUri = savedUri ?: song.contentUri)
                 }
 
-                override fun onFailure(
-                    call: Call<List<SongDto>?>,
-                    t: Throwable
-                ) {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = "Network request failed: ${t.message}"
-                        )
-                    }
-                    Log.v(TAG, "onFailure: ${t.message}")
+                _state.update {
+                    it.copy(
+                        songs = downloadedSongs,
+                        isLoading = false
+                    )
                 }
-            })
+            } else {
+                _state.update {
+                    it.copy(isLoading = false, error = "API failed with code: ${response.code()}")
+                }
+            }
+        } catch (e: Exception) {
+            _state.update {
+                it.copy(isLoading = false, error = "Network request failed: ${e.message}")
+            }
         }
     }
 
