@@ -45,7 +45,6 @@ import com.example.buibinhminh.ui.shared.InputField
 @Composable
 fun LoginScreenMVI(
     viewModel: LoginViewModel,
-    authViewModel: AuthViewModel,
     initialUsername: String = "",
     initialPassword: String = "",
     onLoginSuccess: (UserEntity) -> Unit,

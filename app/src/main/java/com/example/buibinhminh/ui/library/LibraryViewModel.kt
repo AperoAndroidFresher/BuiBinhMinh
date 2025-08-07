@@ -102,7 +102,6 @@ class LibraryViewModel(
         }
     }
 
-
     private suspend fun loadRemoteSongs() {
         _state.update { it.copy(isLoading = true, error = null) }
         val savedSongs = readSavedSongsFromInternalStorage(getApplication())
