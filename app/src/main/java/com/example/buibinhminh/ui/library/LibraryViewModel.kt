@@ -1,28 +1,25 @@
 package com.example.buibinhminh.ui.library
 
 import android.app.Application
-import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.buibinhminh.data.Playlist
-import com.example.buibinhminh.data.SongDto
 import com.example.buibinhminh.data.toSong
 import com.example.buibinhminh.data.toSongEntity
 import com.example.buibinhminh.database.relationships.toPlaylist
 import com.example.buibinhminh.helper.getAllMp3Files
 import com.example.buibinhminh.repository.PlaylistRepository
 import com.example.buibinhminh.retrofit.ApiClient
-import kotlinx.coroutines.Dispatchers
+import com.example.buibinhminh.storage.readSavedSongsFromInternalStorage
+import com.example.buibinhminh.storage.saveFileToInternalStorage
+import com.example.buibinhminh.storage.saveSongMetadata
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class LibraryViewModel(
     application: Application,
@@ -50,7 +47,7 @@ class LibraryViewModel(
     fun processIntent(intent: LibraryIntent) {
         when (intent) {
             LibraryIntent.LoadLocalSongs -> loadLocalSongs()
-            LibraryIntent.LoadRemoteSongs -> loadRemoteSongs()
+            LibraryIntent.LoadRemoteSongs -> viewModelScope.launch { loadRemoteSongs()}
             is LibraryIntent.ShowAddToPlaylistDialog -> _state.update {
                 it.copy(
                     showAddToPlaylistDialog = true,
@@ -105,57 +102,59 @@ class LibraryViewModel(
         }
     }
 
-    private fun loadRemoteSongs() {
+    private suspend fun loadRemoteSongs() {
         _state.update { it.copy(isLoading = true, error = null) }
+        val savedSongs = readSavedSongsFromInternalStorage(getApplication())
 
-        viewModelScope.launch(Dispatchers.IO) {
-            val call = ApiClient.build().getSongs()
-            call.enqueue(object : Callback<List<SongDto>> {
-                override fun onResponse(
-                    call: Call<List<SongDto>?>,
-                    response: Response<List<SongDto>?>
-                ) {
-                    when {
-                        response.isSuccessful -> {
-                            val songDto = response.body()
-                            val songs = songDto?.map { it.toSong() } ?: emptyList()
-                            _state.update {
-                                it.copy(
-                                    songs = songs,
-                                    isLoading = false
-                                )
-                            }
-                        }
+        if (savedSongs.isNotEmpty()) {
+            _state.update { it.copy(songs = savedSongs, isLoading = false) }
+        }
+        try {
+            val response = ApiClient.build().getSongs()
 
-                        response.code() == 400 -> {} //Bad Request
-                        response.code() == 401 -> {} //Unauthorized
-                        response.code() == 403 -> {} //Forbidden
-                        response.code() == 404 -> {} //Not Found
-                        response.code() == 500 -> {} //Internal Server Error
-                        else -> {
-                            _state.update {
-                                it.copy(
-                                    isLoading = false,
-                                    error = "API failed with code: ${response.code()}"
-                                )
-                            }
-                        }
-                    }
+            if (response.isSuccessful) {
+                val songDtos = response.body() ?: emptyList()
+                val downloadedSongs = songDtos.map { songDto ->
+                    val song = songDto.toSong()
+                    val songFileResponse = ApiClient.build().downloadSong(song.contentUri.toString())
+                    val savedUri =
+                        saveFileToInternalStorage(getApplication(), song, songFileResponse)
+                    song.copy(contentUri = savedUri ?: song.contentUri)
                 }
 
-                override fun onFailure(
-                    call: Call<List<SongDto>?>,
-                    t: Throwable
-                ) {
+                _state.update {
+                    it.copy(
+                        songs = downloadedSongs,
+                        isLoading = false
+                    )
+                }
+
+                if(downloadedSongs.isNotEmpty()) {
+                    saveSongMetadata(getApplication(),downloadedSongs)
+                }
+            } else {
+                if (savedSongs.isEmpty()) {
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            error = "Network request failed: ${t.message}"
+                            error = "API failed with code: ${response.code()}"
                         )
                     }
-                    Log.v(TAG, "onFailure: ${t.message}")
+                } else {
+                    _state.update { it.copy(isLoading = false) }
                 }
-            })
+            }
+        } catch (e: Exception) {
+            if (savedSongs.isEmpty()) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "No internet connection and no saved data"
+                    )
+                }
+            } else {
+                _state.update { it.copy(isLoading = false) }
+            }
         }
     }
 
