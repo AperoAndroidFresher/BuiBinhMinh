@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -61,6 +62,8 @@ import com.example.buibinhminh.ui.library.LibraryScreen
 import com.example.buibinhminh.ui.library.LibraryViewModel
 import com.example.buibinhminh.ui.myplaylist.MyPlaylistScreen
 import com.example.buibinhminh.ui.myplaylist.MyPlaylistViewModel
+import com.example.buibinhminh.ui.player.SongPlayerScreen
+import com.example.buibinhminh.ui.player.SongPlayerViewModel
 import com.example.buibinhminh.ui.playlistSong.PlaylistScreenMVI
 import com.example.buibinhminh.ui.playlistSong.PlaylistViewModel
 import com.example.buibinhminh.ui.profile.ProfileScreenMVI
@@ -72,6 +75,7 @@ fun FinalAppNavigation() {
     val db = remember { AppDatabase.getInstance(context) }
 
     val authViewModel: AuthViewModel = viewModel()
+    val playerViewModel: SongPlayerViewModel = viewModel()
     val currentUser by authViewModel.currentUser.collectAsState()
     val userId = currentUser?.id
 
@@ -109,7 +113,14 @@ fun FinalAppNavigation() {
             if (showBottomNav) {
                 Column {
                     // Current song
-                    SongProgressBar()
+                    if (backStack.lastOrNull() != Screen.Player){
+                        SongProgressBar(
+                            playerViewModel = playerViewModel,
+                            onProgressBarClick = {
+                                backStack.add(Screen.Player)
+                            }
+                        )
+                    }
                     //Navigation bar
                     NavigationBar(
                         containerColor = Color(0xFF1A1A1A),
@@ -252,6 +263,12 @@ fun FinalAppNavigation() {
                             )
                         }
                     }
+                    entry<Screen.Player> {
+                        SongPlayerScreen(
+                            playerViewModel = playerViewModel,
+                            onBackClick = { backStack.removeLastOrNull() }
+                        )
+                    }
                     entry<Screen.Profile> { (userId) ->
                         val viewModel = remember { ProfileViewModel(userId, profileRepository) }
                         ProfileScreenMVI(viewModel = viewModel)
@@ -271,21 +288,36 @@ fun FinalAppNavigation() {
     }
 }
 
-@Preview
 @Composable
 fun SongProgressBar(
-    song : Song = Song(1,"Anh khong lam gi dau Anh khong lam gi dau Anh khong lam gi dau ","test", 50000, 1, "???".toUri())
-){
-    Column (
-        modifier = Modifier.fillMaxWidth()
+    playerViewModel: SongPlayerViewModel,
+    onProgressBarClick: () -> Unit,
+) {
+    val playerState by playerViewModel.nowPlayingState.collectAsState()
+
+    if (playerState.nowPlayingSong == null) {
+        return
+    }
+
+    val song = playerState.nowPlayingSong
+    val isPlaying = playerState.isPlaying
+    val progress = playerState.songProgress
+    val currentDuration = playerState.currentTime
+    val totalDuration = song?.duration
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
             .height(56.dp)
+            .clickable { onProgressBarClick() }
     ) {
         LinearProgressIndicator(
-            progress = { 0.75f },
+            progress = { progress },
             modifier = Modifier.fillMaxWidth(),
         )
-        Row (
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
                 .weight(1f),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -295,14 +327,21 @@ fun SongProgressBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.baseline_play_arrow_24),
-                    contentDescription = "Show Profile",
+                    painter = painterResource(
+                        id = if (isPlaying) R.drawable.round_pause_24 else R.drawable.baseline_play_arrow_24
+                    ),
+                    contentDescription = "Play/Pause",
                     tint = Color.White,
-                    modifier = Modifier.padding(4.dp).size(40.dp)
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .size(40.dp)
+                        .clickable {
+                            if (isPlaying) playerViewModel.pauseSong() else playerViewModel.resumeSong()
+                        }
                 )
 
                 Text(
-                    text = song.title,
+                    text = song?.title ?: "Not found",
                     fontWeight = FontWeight.W500,
                     color = Color.White,
                     maxLines = 1,
@@ -313,7 +352,7 @@ fun SongProgressBar(
 
             }
             Text(
-                text = formatDuration(song.duration),
+                text = formatDuration(song?.duration ?: 0L),
                 color = Color.White,
                 modifier = Modifier.padding(end = 16.dp)
             )

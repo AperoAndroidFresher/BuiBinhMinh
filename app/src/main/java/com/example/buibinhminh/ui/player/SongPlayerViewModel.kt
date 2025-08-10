@@ -66,6 +66,10 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
         _nowPlayingState.update { it.copy(nowPlayingSong = song, isPlaying = true) }
     }
 
+    fun seekTo(position: Long) {
+        mediaPlayerService?.get()?.seekTo(position.toInt())
+    }
+
     fun pauseSong() {
         mediaPlayerService?.get()?.pauseSong()
         _nowPlayingState.update { it.copy(isPlaying = false) }

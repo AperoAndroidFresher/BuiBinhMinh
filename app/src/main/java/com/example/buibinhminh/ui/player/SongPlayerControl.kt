@@ -12,8 +12,10 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,14 +42,28 @@ fun SongPlayerControl(
     onRepeatClick: () -> Unit,
     onSliderChange: (Float) -> Unit
 ) {
-    var sliderPosition by remember { mutableFloatStateOf(progress) }
+    var isSeeking by remember { mutableStateOf(false) }
+    var tempSliderPosition by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(progress) {
+        if (!isSeeking) {
+            tempSliderPosition = progress
+        }
+    }
 
     Column(
         modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
         Slider(
-            value = sliderPosition,
-            onValueChange = { sliderPosition = it },
+            value = tempSliderPosition,
+            onValueChange = {
+                tempSliderPosition = it
+                isSeeking = true
+            },
+            onValueChangeFinished = {
+                onSliderChange(tempSliderPosition)
+                isSeeking = false
+            },
             colors = SliderDefaults.colors(
                 thumbColor = Color(0xFFBB86FC),
                 activeTrackColor = Color(0xFFBB86FC),
