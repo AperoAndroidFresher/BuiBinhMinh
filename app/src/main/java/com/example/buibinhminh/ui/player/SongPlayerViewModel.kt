@@ -62,7 +62,7 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
     }
 
     fun playSong(song: Song) {
-        mediaPlayerService?.get()?.playSong(song.contentUri)
+        mediaPlayerService?.get()?.playSong(song)
         _nowPlayingState.update { it.copy(nowPlayingSong = song, isPlaying = true) }
     }
 
