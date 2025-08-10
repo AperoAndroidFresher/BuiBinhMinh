@@ -17,13 +17,16 @@ import com.example.buibinhminh.R
 import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Playlist
 import com.example.buibinhminh.data.Song
+import com.example.buibinhminh.ui.player.SongPlayerViewModel
 
 @Composable
 fun PlaylistScreenMVI(
     playlist: Playlist,
-    viewModel: PlaylistViewModel = viewModel()
+    viewModel: PlaylistViewModel = viewModel(),
+    playerViewModel: SongPlayerViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val playerState by playerViewModel.nowPlayingState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -38,7 +41,8 @@ fun PlaylistScreenMVI(
             else -> PlaylistContent(
                 playlist = playlist,
                 state = state,
-                viewModel = viewModel
+                viewModel = viewModel,
+                playerViewModel = playerViewModel
             )
         }
     }
@@ -75,7 +79,8 @@ fun EmptyPlaylistScreen() {
 fun PlaylistContent(
     playlist: Playlist,
     state: PlaylistState,
-    viewModel: PlaylistViewModel
+    viewModel: PlaylistViewModel,
+    playerViewModel: SongPlayerViewModel
 ) {
     PlaylistHeader(
         tittle = playlist.name,
@@ -110,12 +115,18 @@ fun PlaylistContent(
     if (!state.isGridView) {
         PlaylistListView(
             songs = state.songs,
-            optionsProvider = playlistOptionsProvider
+            optionsProvider = playlistOptionsProvider,
+            playerViewModel = playerViewModel,
+            nowPlayingSongId = playerViewModel.nowPlayingState.collectAsState().value.nowPlayingSong?.id,
+            isPlaying = playerViewModel.nowPlayingState.collectAsState().value.isPlaying
         )
     } else {
         PlaylistGrid(
             songs = state.songs,
-            optionsProvider = playlistOptionsProvider
+            optionsProvider = playlistOptionsProvider,
+            playerViewModel = playerViewModel,
+            nowPlayingSongId = playerViewModel.nowPlayingState.collectAsState().value.nowPlayingSong?.id,
+            isPlaying = playerViewModel.nowPlayingState.collectAsState().value.isPlaying
         )
     }
 }

@@ -1,6 +1,8 @@
 package com.example.buibinhminh.ui.playlistSong
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,12 +30,16 @@ import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.helper.formatDuration
 import com.example.buibinhminh.helper.getEmbeddedThumbnail
+import com.example.buibinhminh.ui.player.SongPlayerViewModel
 import com.example.buibinhminh.ui.shared.GenericOptionMenu
 
 @Composable
 fun SongListItem(
     song: Song,
-    options: List<MenuOption>
+    options: List<MenuOption>,
+    playerViewModel: SongPlayerViewModel,
+    isPlaying: Boolean,
+    isCurrentSong: Boolean
 ) {
     val context = LocalContext.current
     val thumbnailBitmap = remember(song.id) {
@@ -43,19 +49,33 @@ fun SongListItem(
     val painter = if (thumbnailBitmap != null) {
         rememberAsyncImagePainter(model = thumbnailBitmap)
     } else {
-         painterResource(id = R.drawable.song)
+        painterResource(id = R.drawable.song)
     }
+
+    val backgroundColor = if (isCurrentSong) Color(0xFF333333) else Color.Transparent
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(80.dp),
+            .height(80.dp)
+            .background(backgroundColor)
+            .clickable {
+                if (isCurrentSong) {
+                    if (isPlaying) {
+                        playerViewModel.pauseSong()
+                    } else {
+                        playerViewModel.resumeSong()
+                    }
+                } else {
+                    playerViewModel.playSong(song)
+                }
+            },
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row (
+        Row(
             modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically
-        ){
+        ) {
             Image(
                 painter = painter,
                 contentDescription = "Song",

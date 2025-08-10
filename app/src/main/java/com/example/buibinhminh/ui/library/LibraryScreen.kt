@@ -36,15 +36,19 @@ import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.helper.RequestStoragePermission
 import com.example.buibinhminh.ui.animation.LoadingAnimation
+import com.example.buibinhminh.ui.player.SongPlayerViewModel
 import com.example.buibinhminh.ui.playlistSong.PlaylistListView
 
 @Composable
 fun LibraryScreen(
     viewModel: LibraryViewModel = viewModel(),
+    playerViewModel: SongPlayerViewModel = viewModel(),
     onCreatePlaylist: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
+    val playerState by playerViewModel.nowPlayingState.collectAsState()
     val playlists by viewModel.playlists.collectAsState()
+
     var selectedButton by remember { mutableStateOf("Local") }
 
     RequestStoragePermission {
@@ -203,7 +207,10 @@ fun LibraryScreen(
 
                     PlaylistListView(
                         songs = state.songs,
-                        optionsProvider = libraryOptionsProvider
+                        optionsProvider = libraryOptionsProvider,
+                        playerViewModel = playerViewModel,
+                        nowPlayingSongId = playerState.nowPlayingSong?.id,
+                        isPlaying = playerState.isPlaying
                     )
                 }
             }

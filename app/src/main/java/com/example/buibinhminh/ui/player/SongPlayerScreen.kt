@@ -1,0 +1,59 @@
+package com.example.buibinhminh.ui.player
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+
+@Composable
+fun SongPlayerScreen(
+    playerViewModel: SongPlayerViewModel,
+    onBackClick: () -> Unit
+) {
+    val playerState by playerViewModel.nowPlayingState.collectAsState()
+    val song = playerState.nowPlayingSong
+
+    if (song != null) {
+        SongPlayer(
+            song = song,
+            progress = playerState.songProgress,
+            currentTime = playerState.currentTime,
+            totalDuration = song.duration,
+            isPlaying = playerState.isPlaying,
+            isShuffling = false,
+            isRepeating = false,
+            onBackClick = onBackClick,
+            onCloseClick = { },
+            onPlayPauseClick = {
+                if (playerState.isPlaying) {
+                    playerViewModel.pauseSong()
+                } else {
+                    playerViewModel.resumeSong()
+                }
+            },
+            onSkipPreviousClick = { },
+            onSkipNextClick = { },
+            onShuffleClick = { },
+            onRepeatClick = { },
+            onSliderChange = { newProgress ->
+                val newPosition = (newProgress * song.duration).toLong()
+                playerViewModel.seekTo(newPosition)
+            }
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xff121111)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Not found song", color = Color.Gray)
+        }
+    }
+}

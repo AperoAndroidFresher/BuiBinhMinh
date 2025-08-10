@@ -1,15 +1,11 @@
-package com.example.buibinhminh.ui.playlistSong
+package com.example.buibinhminh.ui.player
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -26,21 +23,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.buibinhminh.R
-import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
-import com.example.buibinhminh.helper.formatDuration
 import com.example.buibinhminh.helper.getEmbeddedThumbnail
-import com.example.buibinhminh.ui.player.SongPlayerViewModel
-import com.example.buibinhminh.ui.shared.GenericOptionMenu
 
 @Composable
-fun SongGridItem(
-    song: Song,
-    options: List<MenuOption>,
-    playerViewModel: SongPlayerViewModel,
-    isPlaying: Boolean,
-    isCurrentSong: Boolean
-) {
+fun SongPlayerInformation(song: Song) {
     val context = LocalContext.current
     val thumbnailBitmap = remember(song.id) {
         getEmbeddedThumbnail(song.contentUri, context)
@@ -52,26 +39,12 @@ fun SongGridItem(
         painterResource(id = R.drawable.song)
     }
 
-    val backgroundColor = if (isCurrentSong) Color(0xFF333333) else Color.Transparent
-
     Column(
         modifier = Modifier
-            .width(200.dp)
-            .height(300.dp)
-            .padding(16.dp).background(backgroundColor)
-            .clickable {
-                if (isCurrentSong) {
-                    if (isPlaying) {
-                        playerViewModel.pauseSong()
-                    } else {
-                        playerViewModel.resumeSong()
-                    }
-                } else {
-                    playerViewModel.playSong(song)
-                }
-            },
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(32.dp, 16.dp),
+        horizontalAlignment = Alignment.Start
     ) {
+
         Box(
             modifier = Modifier
                 .padding(bottom = 8.dp)
@@ -79,18 +52,11 @@ fun SongGridItem(
             Image(
                 painter = painter,
                 contentDescription = "Song",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .padding(8.dp)
+                    .padding(bottom = 8.dp)
+                    .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
-            )
-            GenericOptionMenu(
-                options = options,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 16.dp, end = 16.dp)
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.5f))
             )
         }
 
@@ -111,11 +77,6 @@ fun SongGridItem(
             modifier = Modifier.padding(bottom = 8.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
-        )
-        Text(
-            text = formatDuration(song.duration),
-            fontSize = 17.sp,
-            color = Color.White,
         )
     }
 }
