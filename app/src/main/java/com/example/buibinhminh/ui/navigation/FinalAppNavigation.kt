@@ -62,6 +62,7 @@ import com.example.buibinhminh.ui.library.LibraryScreen
 import com.example.buibinhminh.ui.library.LibraryViewModel
 import com.example.buibinhminh.ui.myplaylist.MyPlaylistScreen
 import com.example.buibinhminh.ui.myplaylist.MyPlaylistViewModel
+import com.example.buibinhminh.ui.player.SongPlayerIntent
 import com.example.buibinhminh.ui.player.SongPlayerScreen
 import com.example.buibinhminh.ui.player.SongPlayerViewModel
 import com.example.buibinhminh.ui.playlistSong.PlaylistScreenMVI
@@ -336,7 +337,12 @@ fun SongProgressBar(
                         .padding(4.dp)
                         .size(40.dp)
                         .clickable {
-                            if (isPlaying) playerViewModel.pauseSong() else playerViewModel.resumeSong()
+                            if (isPlaying) {
+                                playerViewModel.processIntent(SongPlayerIntent.PauseSong)
+                            }
+                            else {
+                                playerViewModel.processIntent(SongPlayerIntent.ResumeSong)
+                            }
                         }
                 )
 

@@ -61,23 +61,24 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
         progressJob?.cancel()
     }
 
-    fun playSong(song: Song) {
-        mediaPlayerService?.get()?.playSong(song)
-        _nowPlayingState.update { it.copy(nowPlayingSong = song, isPlaying = true) }
-    }
-
-    fun seekTo(position: Long) {
-        mediaPlayerService?.get()?.seekTo(position.toInt())
-    }
-
-    fun pauseSong() {
-        mediaPlayerService?.get()?.pauseSong()
-        _nowPlayingState.update { it.copy(isPlaying = false) }
-    }
-
-    fun resumeSong() {
-        mediaPlayerService?.get()?.resumeSong()
-        _nowPlayingState.update { it.copy(isPlaying = true) }
+    fun processIntent(intent: SongPlayerIntent) {
+        when (intent) {
+            is SongPlayerIntent.PlaySong -> {
+                mediaPlayerService?.get()?.playSong(intent.song)
+                _nowPlayingState.update { it.copy(nowPlayingSong = intent.song, isPlaying = true) }
+            }
+            SongPlayerIntent.PauseSong -> {
+                mediaPlayerService?.get()?.pauseSong()
+                _nowPlayingState.update { it.copy(isPlaying = false) }
+            }
+            SongPlayerIntent.ResumeSong -> {
+                mediaPlayerService?.get()?.resumeSong()
+                _nowPlayingState.update { it.copy(isPlaying = true) }
+            }
+            is SongPlayerIntent.SeekTo -> {
+                mediaPlayerService?.get()?.seekTo(intent.position.toInt())
+            }
+        }
     }
 
     private fun startProgressUpdate() {

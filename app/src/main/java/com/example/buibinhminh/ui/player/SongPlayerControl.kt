@@ -114,7 +114,7 @@ fun SongPlayerControl(
             )
 
             Icon(
-                painter = painterResource(id = if (isPlaying) R.drawable.outline_play_circle_24 else R.drawable.outline_pause_circle_24),
+                painter = painterResource(id = if (!isPlaying) R.drawable.outline_play_circle_24 else R.drawable.outline_pause_circle_24),
                 contentDescription = "Play/Pause",
                 tint = Color(0xFFBB86FC),
                 modifier = Modifier

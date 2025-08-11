@@ -32,9 +32,9 @@ fun SongPlayerScreen(
             onCloseClick = { },
             onPlayPauseClick = {
                 if (playerState.isPlaying) {
-                    playerViewModel.pauseSong()
+                    playerViewModel.processIntent(SongPlayerIntent.PauseSong)
                 } else {
-                    playerViewModel.resumeSong()
+                    playerViewModel.processIntent(SongPlayerIntent.ResumeSong)
                 }
             },
             onSkipPreviousClick = { },
@@ -43,7 +43,7 @@ fun SongPlayerScreen(
             onRepeatClick = { },
             onSliderChange = { newProgress ->
                 val newPosition = (newProgress * song.duration).toLong()
-                playerViewModel.seekTo(newPosition)
+                playerViewModel.processIntent(SongPlayerIntent.SeekTo(newPosition))
             }
         )
     } else {

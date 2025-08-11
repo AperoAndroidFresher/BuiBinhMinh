@@ -52,7 +52,7 @@ class MediaPlayerService : Service() {
             ACTION_SKIP_NEXT -> {}
             ACTION_SKIP_PREVIOUS -> {}
             ACTION_STOP -> {
-                stopSelf()
+                mediaPlayer?.release()
                 stopForeground(STOP_FOREGROUND_REMOVE)
             }
         }
@@ -92,7 +92,7 @@ class MediaPlayerService : Service() {
         mediaPlayer?.seekTo(position)
     }
 
-    fun isPlaying(): Boolean = mediaPlayer?.isPlaying ?: false
+    fun isPlaying(): Boolean = mediaPlayer?.isPlaying == true
 
     fun getCurrentPosition(): Int = mediaPlayer?.currentPosition ?: 0
 
@@ -119,7 +119,7 @@ class MediaPlayerService : Service() {
             if (isPlaying) R.drawable.round_pause_24 else R.drawable.baseline_play_arrow_24
         val playPauseAction = if (isPlaying) ACTION_PAUSE else ACTION_RESUME
 
-        val songTitle = currentSong?.title ?: "Unknow title"
+        val songTitle = currentSong?.title ?: "Unknown title"
         val songArtist = currentSong?.artist ?: "Unknown artist"
         val thumbnailBitmap = currentSong?.let {
             getEmbeddedThumbnail(it.contentUri, this)
