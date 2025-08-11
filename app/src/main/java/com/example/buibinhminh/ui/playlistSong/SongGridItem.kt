@@ -42,7 +42,8 @@ fun SongGridItem(
     options: List<MenuOption>,
     playerViewModel: SongPlayerViewModel,
     isPlaying: Boolean,
-    isCurrentSong: Boolean
+    isCurrentSong: Boolean,
+    onSongClick: (Song) -> Unit
 ) {
     val context = LocalContext.current
     val thumbnailBitmap = remember(song.id) {
@@ -71,6 +72,7 @@ fun SongGridItem(
                         playerViewModel.processIntent(SongPlayerIntent.ResumeSong)
                     }
                 } else {
+                    onSongClick(song)
                     playerViewModel.processIntent(SongPlayerIntent.PlaySong(song))
                 }
             },

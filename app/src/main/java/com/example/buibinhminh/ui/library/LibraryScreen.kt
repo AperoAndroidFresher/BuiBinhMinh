@@ -36,6 +36,7 @@ import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.helper.RequestStoragePermission
 import com.example.buibinhminh.ui.animation.LoadingAnimation
+import com.example.buibinhminh.ui.player.SongPlayerIntent
 import com.example.buibinhminh.ui.player.SongPlayerViewModel
 import com.example.buibinhminh.ui.playlistSong.PlaylistListView
 
@@ -210,7 +211,12 @@ fun LibraryScreen(
                         optionsProvider = libraryOptionsProvider,
                         playerViewModel = playerViewModel,
                         nowPlayingSongId = playerState.nowPlayingSong?.id,
-                        isPlaying = playerState.isPlaying
+                        isPlaying = playerState.isPlaying,
+                        onSongClick = { selectedSong ->
+                            playerViewModel.processIntent(
+                                SongPlayerIntent.SetQueueAndPlay(state.songs, selectedSong)
+                            )
+                        }
                     )
                 }
             }

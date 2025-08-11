@@ -44,7 +44,8 @@ fun SongListItem(
     options: List<MenuOption>,
     playerViewModel: SongPlayerViewModel,
     isPlaying: Boolean,
-    isCurrentSong: Boolean
+    isCurrentSong: Boolean,
+    onSongClick: (Song) -> Unit
 ) {
     val context = LocalContext.current
     val thumbnailBitmap = remember(song.id) {
@@ -72,7 +73,7 @@ fun SongListItem(
                         playerViewModel.processIntent(SongPlayerIntent.ResumeSong)
                     }
                 } else {
-                    playerViewModel.processIntent(SongPlayerIntent.PlaySong(song))
+                    onSongClick(song)
                 }
             },
         horizontalArrangement = Arrangement.SpaceBetween

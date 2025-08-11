@@ -293,6 +293,7 @@ fun FinalAppNavigation() {
 fun SongProgressBar(
     playerViewModel: SongPlayerViewModel,
     onProgressBarClick: () -> Unit,
+    songs: List<Song> = emptyList()
 ) {
     val playerState by playerViewModel.nowPlayingState.collectAsState()
 

@@ -17,6 +17,7 @@ import com.example.buibinhminh.R
 import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Playlist
 import com.example.buibinhminh.data.Song
+import com.example.buibinhminh.ui.player.SongPlayerIntent
 import com.example.buibinhminh.ui.player.SongPlayerViewModel
 
 @Composable
@@ -118,7 +119,12 @@ fun PlaylistContent(
             optionsProvider = playlistOptionsProvider,
             playerViewModel = playerViewModel,
             nowPlayingSongId = playerViewModel.nowPlayingState.collectAsState().value.nowPlayingSong?.id,
-            isPlaying = playerViewModel.nowPlayingState.collectAsState().value.isPlaying
+            isPlaying = playerViewModel.nowPlayingState.collectAsState().value.isPlaying,
+            onSongClick = { selectedSong ->
+                playerViewModel.processIntent(
+                    SongPlayerIntent.SetQueueAndPlay(state.songs, selectedSong)
+                )
+            }
         )
     } else {
         PlaylistGrid(
@@ -126,7 +132,12 @@ fun PlaylistContent(
             optionsProvider = playlistOptionsProvider,
             playerViewModel = playerViewModel,
             nowPlayingSongId = playerViewModel.nowPlayingState.collectAsState().value.nowPlayingSong?.id,
-            isPlaying = playerViewModel.nowPlayingState.collectAsState().value.isPlaying
+            isPlaying = playerViewModel.nowPlayingState.collectAsState().value.isPlaying,
+            onSongClick = { selectedSong ->
+                playerViewModel.processIntent(
+                    SongPlayerIntent.SetQueueAndPlay(state.songs, selectedSong)
+                )
+            }
         )
     }
 }

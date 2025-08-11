@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.service.MediaPlayerService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -28,11 +27,20 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
     private var isServiceBound = false
     private var progressJob: Job? = null
 
+    private val playbackQueueManager = PlaybackQueueManager()
+
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as MediaPlayerService.MusicBinder
+
             mediaPlayerService = WeakReference(binder.getService())
             isServiceBound = true
+
+            binder.setSkipListeners(
+                onSkipNext = { processIntent(SongPlayerIntent.SkipNext) },
+                onSkipPrevious = { processIntent(SongPlayerIntent.SkipPrevious) }
+            )
+
             startProgressUpdate()
         }
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -64,19 +72,47 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
     fun processIntent(intent: SongPlayerIntent) {
         when (intent) {
             is SongPlayerIntent.PlaySong -> {
-                mediaPlayerService?.get()?.playSong(intent.song)
-                _nowPlayingState.update { it.copy(nowPlayingSong = intent.song, isPlaying = true) }
+                val song = intent.song
+                mediaPlayerService?.get()?.playSong(song)
+                _nowPlayingState.update { it.copy(nowPlayingSong = song, isPlaying = true) }
             }
+
+            is SongPlayerIntent.SetQueueAndPlay -> {
+                val songs = intent.songs
+                val startSong = intent.startSong
+                val startIndex = songs.indexOf(startSong)
+
+                playbackQueueManager.setQueue(songs, startIndex)
+
+                processIntent(SongPlayerIntent.PlaySong(startSong))
+            }
+
             SongPlayerIntent.PauseSong -> {
                 mediaPlayerService?.get()?.pauseSong()
                 _nowPlayingState.update { it.copy(isPlaying = false) }
             }
+
             SongPlayerIntent.ResumeSong -> {
                 mediaPlayerService?.get()?.resumeSong()
                 _nowPlayingState.update { it.copy(isPlaying = true) }
             }
+
             is SongPlayerIntent.SeekTo -> {
                 mediaPlayerService?.get()?.seekTo(intent.position.toInt())
+            }
+
+            SongPlayerIntent.SkipNext -> {
+                val nextSong = playbackQueueManager.skipToNext()
+                if (nextSong != null) {
+                    processIntent(SongPlayerIntent.PlaySong(nextSong))
+                }
+            }
+
+            SongPlayerIntent.SkipPrevious -> {
+                val previousSong = playbackQueueManager.skipToPrevious()
+                if (previousSong != null) {
+                    processIntent(SongPlayerIntent.PlaySong(previousSong))
+                }
             }
         }
     }

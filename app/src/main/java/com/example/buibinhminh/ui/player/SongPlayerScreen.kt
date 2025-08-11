@@ -37,8 +37,12 @@ fun SongPlayerScreen(
                     playerViewModel.processIntent(SongPlayerIntent.ResumeSong)
                 }
             },
-            onSkipPreviousClick = { },
-            onSkipNextClick = { },
+            onSkipPreviousClick = {
+                playerViewModel.processIntent(SongPlayerIntent.SkipPrevious)
+            },
+            onSkipNextClick = {
+                playerViewModel.processIntent(SongPlayerIntent.SkipNext)
+            },
             onShuffleClick = { },
             onRepeatClick = { },
             onSliderChange = { newProgress ->
