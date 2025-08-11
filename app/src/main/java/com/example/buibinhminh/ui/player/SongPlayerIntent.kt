@@ -10,4 +10,7 @@ sealed interface SongPlayerIntent {
     data class SetQueueAndPlay(val songs: List<Song>, val startSong: Song) : SongPlayerIntent
     data object SkipNext : SongPlayerIntent
     data object SkipPrevious : SongPlayerIntent
+    data object SongFinished : SongPlayerIntent
+    data object ToggleShuffle : SongPlayerIntent
+    data object ToggleRepeat : SongPlayerIntent
 }

@@ -26,8 +26,8 @@ fun SongPlayerScreen(
             currentTime = playerState.currentTime,
             totalDuration = song.duration,
             isPlaying = playerState.isPlaying,
-            isShuffling = false,
-            isRepeating = false,
+            isShuffling = playerState.isShuffling,
+            repeatMode = playerState.repeatMode,
             onBackClick = onBackClick,
             onCloseClick = { },
             onPlayPauseClick = {
@@ -43,8 +43,12 @@ fun SongPlayerScreen(
             onSkipNextClick = {
                 playerViewModel.processIntent(SongPlayerIntent.SkipNext)
             },
-            onShuffleClick = { },
-            onRepeatClick = { },
+            onShuffleClick = {
+                playerViewModel.processIntent(SongPlayerIntent.ToggleShuffle)
+            },
+            onRepeatClick = {
+                playerViewModel.processIntent(SongPlayerIntent.ToggleRepeat)
+            },
             onSliderChange = { newProgress ->
                 val newPosition = (newProgress * song.duration).toLong()
                 playerViewModel.processIntent(SongPlayerIntent.SeekTo(newPosition))

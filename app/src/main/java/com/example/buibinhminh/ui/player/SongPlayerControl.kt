@@ -34,7 +34,7 @@ fun SongPlayerControl(
     totalDuration: Long,
     isPlaying: Boolean,
     isShuffling: Boolean,
-    isRepeating: Boolean,
+    repeatMode: RepeatMode,
     onPlayPauseClick: () -> Unit,
     onSkipPreviousClick: () -> Unit,
     onSkipNextClick: () -> Unit,
@@ -42,6 +42,14 @@ fun SongPlayerControl(
     onRepeatClick: () -> Unit,
     onSliderChange: (Float) -> Unit
 ) {
+    val repeatIcon = when (repeatMode) {
+        RepeatMode.OFF -> R.drawable.rounded_repeat_24
+        RepeatMode.REPEAT_ALL -> R.drawable.rounded_repeat_24
+        RepeatMode.REPEAT_ONE -> R.drawable.rounded_repeat_one_24
+    }
+
+    val repeatTint = if (repeatMode != RepeatMode.OFF) Color.White else Color.Gray
+
     var isSeeking by remember { mutableStateOf(false) }
     var tempSliderPosition by remember { mutableFloatStateOf(0f) }
 
@@ -132,9 +140,9 @@ fun SongPlayerControl(
             )
 
             Icon(
-                painter = painterResource(id = R.drawable.rounded_repeat_24),
+                painter = painterResource(id = repeatIcon),
                 contentDescription = "Repeat",
-                tint = if (!isRepeating) Color.Gray else Color.White,
+                tint = repeatTint,
                 modifier = Modifier
                     .size(24.dp)
                     .clickable { onRepeatClick() }

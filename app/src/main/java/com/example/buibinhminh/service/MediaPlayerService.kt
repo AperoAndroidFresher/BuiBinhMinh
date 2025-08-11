@@ -22,6 +22,7 @@ class MediaPlayerService : Service() {
     private var currentSong: Song? = null
     private var onSkipNext: (() -> Unit)? = null
     private var onSkipPrevious: (() -> Unit)? = null
+    private var onSongCompletion: (() -> Unit)? = null
 
     companion object {
         const val NOTIFICATION_ID = 1
@@ -35,8 +36,12 @@ class MediaPlayerService : Service() {
 
     inner class MusicBinder : Binder() {
         fun getService(): MediaPlayerService = this@MediaPlayerService
-        fun setSkipListeners(onSkipNext: () -> Unit, onSkipPrevious: () -> Unit) {
-            getService().setSkipListeners(onSkipNext, onSkipPrevious)
+        fun setSkipListeners(
+            onSkipNext: () -> Unit,
+            onSkipPrevious: () -> Unit,
+            onSongCompletion: () -> Unit
+        ) {
+            getService().setSkipListeners(onSkipNext, onSkipPrevious, onSongCompletion)
         }
     }
 
@@ -70,6 +75,9 @@ class MediaPlayerService : Service() {
                 currentSong = song
                 startForeground(NOTIFICATION_ID, createNotification(true))
             }
+            setOnCompletionListener {
+                onSongCompletion?.invoke()
+            }
         }
     }
 
@@ -97,9 +105,14 @@ class MediaPlayerService : Service() {
 
     fun getDuration(): Int = mediaPlayer?.duration ?: 0
 
-    fun setSkipListeners(onSkipNext: () -> Unit, onSkipPrevious: () -> Unit) {
+    fun setSkipListeners(
+        onSkipNext: () -> Unit,
+        onSkipPrevious: () -> Unit,
+        onSongCompletion: () -> Unit
+    ) {
         this.onSkipNext = onSkipNext
         this.onSkipPrevious = onSkipPrevious
+        this.onSongCompletion = onSongCompletion
     }
 
     private fun createNotification(isPlaying: Boolean): Notification {

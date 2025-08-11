@@ -38,7 +38,8 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
 
             binder.setSkipListeners(
                 onSkipNext = { processIntent(SongPlayerIntent.SkipNext) },
-                onSkipPrevious = { processIntent(SongPlayerIntent.SkipPrevious) }
+                onSkipPrevious = { processIntent(SongPlayerIntent.SkipPrevious) },
+                onSongCompletion = { processIntent(SongPlayerIntent.SongFinished) }
             )
 
             startProgressUpdate()
@@ -114,6 +115,28 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
                     processIntent(SongPlayerIntent.PlaySong(previousSong))
                 }
             }
+
+            SongPlayerIntent.SongFinished -> {
+                val nextSong = playbackQueueManager.skipToNext()
+                if (nextSong != null) {
+                    processIntent(SongPlayerIntent.PlaySong(nextSong))
+                } else {
+                    mediaPlayerService?.get()?.pauseSong()
+                    _nowPlayingState.update { it.copy(isPlaying = false) }
+                }
+            }
+
+            SongPlayerIntent.ToggleShuffle -> {
+                val isShuffling = playbackQueueManager.toggleShuffle()
+                _nowPlayingState.update { it.copy(isShuffling = isShuffling) }
+                val nowPlaying = playbackQueueManager.getNowPlayingSong()
+                _nowPlayingState.update { it.copy(nowPlayingSong = nowPlaying) }
+            }
+
+            SongPlayerIntent.ToggleRepeat -> {
+                val newRepeatMode = playbackQueueManager.toggleRepeat()
+                _nowPlayingState.update { it.copy(repeatMode = newRepeatMode) }
+            }
         }
     }
 
@@ -132,7 +155,7 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
                         songProgress = progress
                     )
                 }
-                delay(1000L)
+                delay(500L)
             }
         }
     }
