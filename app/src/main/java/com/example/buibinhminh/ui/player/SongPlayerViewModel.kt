@@ -40,7 +40,9 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
                 onSkipNext = { processIntent(SongPlayerIntent.SkipNext) },
                 onSkipPrevious = { processIntent(SongPlayerIntent.SkipPrevious) },
                 onSongCompletion = { processIntent(SongPlayerIntent.SongFinished) },
-                onServiceClosed = { processIntent(SongPlayerIntent.CloseSong) }
+                onServiceClosed = { processIntent(SongPlayerIntent.CloseSong) },
+                onSongPaused = { processIntent(SongPlayerIntent.PauseSong) },
+                onSongResumed = { processIntent(SongPlayerIntent.ResumeSong) }
             )
 
             startProgressUpdate()

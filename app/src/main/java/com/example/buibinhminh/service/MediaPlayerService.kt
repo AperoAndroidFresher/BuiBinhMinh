@@ -20,10 +20,13 @@ class MediaPlayerService : Service() {
     private val binder = MusicBinder()
     private var mediaPlayer: MediaPlayer? = null
     private var currentSong: Song? = null
+
     private var onSkipNext: (() -> Unit)? = null
     private var onSkipPrevious: (() -> Unit)? = null
     private var onSongCompletion: (() -> Unit)? = null
     private var onServiceClosed: (() -> Unit)? = null
+    private var onSongPaused: (() -> Unit)? = null
+    private var onSongResumed: (() -> Unit)? = null
 
     companion object {
         const val NOTIFICATION_ID = 1
@@ -41,9 +44,18 @@ class MediaPlayerService : Service() {
             onSkipNext: () -> Unit,
             onSkipPrevious: () -> Unit,
             onSongCompletion: () -> Unit,
-            onServiceClosed: () -> Unit
+            onServiceClosed: () -> Unit,
+            onSongPaused: () -> Unit,
+            onSongResumed: () -> Unit
         ) {
-            getService().setPlayerListeners(onSkipNext, onSkipPrevious, onSongCompletion, onServiceClosed)
+            getService().setPlayerListeners(
+                onSkipNext,
+                onSkipPrevious,
+                onSongCompletion,
+                onServiceClosed,
+                onSongPaused,
+                onSongResumed
+            )
         }
     }
 
@@ -53,8 +65,8 @@ class MediaPlayerService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_PAUSE -> pauseSong()
-            ACTION_RESUME -> resumeSong()
+            ACTION_PAUSE -> onSongPaused?.invoke()
+            ACTION_RESUME -> onSongResumed?.invoke()
             ACTION_SKIP_NEXT -> onSkipNext?.invoke()
             ACTION_SKIP_PREVIOUS -> onSkipPrevious?.invoke()
             ACTION_STOP -> onServiceClosed?.invoke()
@@ -94,7 +106,7 @@ class MediaPlayerService : Service() {
         }
     }
 
-    fun stopSong(){
+    fun stopSong() {
         mediaPlayer?.let {
             if (it.isPlaying) {
                 it.stop()
@@ -121,12 +133,16 @@ class MediaPlayerService : Service() {
         onSkipNext: () -> Unit,
         onSkipPrevious: () -> Unit,
         onSongCompletion: () -> Unit,
-        onServiceClosed: () -> Unit
+        onServiceClosed: () -> Unit,
+        onSongPaused: () -> Unit,
+        onSongResumed: () -> Unit
     ) {
         this.onSkipNext = onSkipNext
         this.onSkipPrevious = onSkipPrevious
         this.onSongCompletion = onSongCompletion
         this.onServiceClosed = onServiceClosed
+        this.onSongPaused = onSongPaused
+        this.onSongResumed = onSongResumed
     }
 
     private fun createNotification(isPlaying: Boolean): Notification {
