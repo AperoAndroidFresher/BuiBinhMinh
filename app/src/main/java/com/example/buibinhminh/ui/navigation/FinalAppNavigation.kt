@@ -35,10 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -46,7 +43,6 @@ import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.example.buibinhminh.R
-import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.database.AppDatabase
 import com.example.buibinhminh.helper.formatDuration
 import com.example.buibinhminh.repository.PlaylistRepository
@@ -114,7 +110,7 @@ fun FinalAppNavigation() {
             if (showBottomNav) {
                 Column {
                     // Current song
-                    if (backStack.lastOrNull() != Screen.Player){
+                    if (backStack.lastOrNull() != Screen.Player) {
                         SongProgressBar(
                             playerViewModel = playerViewModel,
                             onProgressBarClick = {
@@ -292,8 +288,7 @@ fun FinalAppNavigation() {
 @Composable
 fun SongProgressBar(
     playerViewModel: SongPlayerViewModel,
-    onProgressBarClick: () -> Unit,
-    songs: List<Song> = emptyList()
+    onProgressBarClick: () -> Unit
 ) {
     val playerState by playerViewModel.nowPlayingState.collectAsState()
 
@@ -304,8 +299,6 @@ fun SongProgressBar(
     val song = playerState.nowPlayingSong
     val isPlaying = playerState.isPlaying
     val progress = playerState.songProgress
-    val currentDuration = playerState.currentTime
-    val totalDuration = song?.duration
 
     Column(
         modifier = Modifier
@@ -313,6 +306,7 @@ fun SongProgressBar(
             .height(56.dp)
             .clickable { onProgressBarClick() }
     ) {
+
         LinearProgressIndicator(
             progress = { progress },
             modifier = Modifier.fillMaxWidth(),
@@ -340,8 +334,7 @@ fun SongProgressBar(
                         .clickable {
                             if (isPlaying) {
                                 playerViewModel.processIntent(SongPlayerIntent.PauseSong)
-                            }
-                            else {
+                            } else {
                                 playerViewModel.processIntent(SongPlayerIntent.ResumeSong)
                             }
                         }
@@ -358,11 +351,26 @@ fun SongProgressBar(
                 )
 
             }
-            Text(
-                text = formatDuration(song?.duration ?: 0L),
-                color = Color.White,
-                modifier = Modifier.padding(end = 16.dp)
-            )
+            Row (
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = formatDuration(song?.duration ?: 0L),
+                    color = Color.White,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_close_24),
+                    contentDescription = "Close",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .clickable {
+                            playerViewModel.processIntent(SongPlayerIntent.CloseSong)
+                        }
+                )
+            }
         }
     }
 }

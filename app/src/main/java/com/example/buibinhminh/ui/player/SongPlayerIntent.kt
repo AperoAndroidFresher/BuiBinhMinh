@@ -13,4 +13,5 @@ sealed interface SongPlayerIntent {
     data object SongFinished : SongPlayerIntent
     data object ToggleShuffle : SongPlayerIntent
     data object ToggleRepeat : SongPlayerIntent
+    data object CloseSong: SongPlayerIntent
 }

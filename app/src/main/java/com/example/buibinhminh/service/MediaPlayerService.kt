@@ -23,6 +23,7 @@ class MediaPlayerService : Service() {
     private var onSkipNext: (() -> Unit)? = null
     private var onSkipPrevious: (() -> Unit)? = null
     private var onSongCompletion: (() -> Unit)? = null
+    private var onServiceClosed: (() -> Unit)? = null
 
     companion object {
         const val NOTIFICATION_ID = 1
@@ -36,12 +37,13 @@ class MediaPlayerService : Service() {
 
     inner class MusicBinder : Binder() {
         fun getService(): MediaPlayerService = this@MediaPlayerService
-        fun setSkipListeners(
+        fun setPlayerListeners(
             onSkipNext: () -> Unit,
             onSkipPrevious: () -> Unit,
-            onSongCompletion: () -> Unit
+            onSongCompletion: () -> Unit,
+            onServiceClosed: () -> Unit
         ) {
-            getService().setSkipListeners(onSkipNext, onSkipPrevious, onSongCompletion)
+            getService().setPlayerListeners(onSkipNext, onSkipPrevious, onSongCompletion, onServiceClosed)
         }
     }
 
@@ -55,10 +57,7 @@ class MediaPlayerService : Service() {
             ACTION_RESUME -> resumeSong()
             ACTION_SKIP_NEXT -> onSkipNext?.invoke()
             ACTION_SKIP_PREVIOUS -> onSkipPrevious?.invoke()
-            ACTION_STOP -> {
-                mediaPlayer?.release()
-                stopForeground(STOP_FOREGROUND_REMOVE)
-            }
+            ACTION_STOP -> onServiceClosed?.invoke()
         }
         return START_NOT_STICKY
     }
@@ -95,6 +94,19 @@ class MediaPlayerService : Service() {
         }
     }
 
+    fun stopSong(){
+        mediaPlayer?.let {
+            if (it.isPlaying) {
+                it.stop()
+            }
+            it.reset()
+            it.release()
+        }
+        mediaPlayer = null
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+    }
+
     fun seekTo(position: Int) {
         mediaPlayer?.seekTo(position)
     }
@@ -105,14 +117,16 @@ class MediaPlayerService : Service() {
 
     fun getDuration(): Int = mediaPlayer?.duration ?: 0
 
-    fun setSkipListeners(
+    fun setPlayerListeners(
         onSkipNext: () -> Unit,
         onSkipPrevious: () -> Unit,
-        onSongCompletion: () -> Unit
+        onSongCompletion: () -> Unit,
+        onServiceClosed: () -> Unit
     ) {
         this.onSkipNext = onSkipNext
         this.onSkipPrevious = onSkipPrevious
         this.onSongCompletion = onSongCompletion
+        this.onServiceClosed = onServiceClosed
     }
 
     private fun createNotification(isPlaying: Boolean): Notification {
@@ -188,8 +202,10 @@ class MediaPlayerService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        mediaPlayer?.stop()
         mediaPlayer?.release()
         mediaPlayer = null
+        currentSong = null
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
 

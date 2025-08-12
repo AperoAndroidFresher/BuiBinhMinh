@@ -36,10 +36,11 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
             mediaPlayerService = WeakReference(binder.getService())
             isServiceBound = true
 
-            binder.setSkipListeners(
+            binder.setPlayerListeners(
                 onSkipNext = { processIntent(SongPlayerIntent.SkipNext) },
                 onSkipPrevious = { processIntent(SongPlayerIntent.SkipPrevious) },
-                onSongCompletion = { processIntent(SongPlayerIntent.SongFinished) }
+                onSongCompletion = { processIntent(SongPlayerIntent.SongFinished) },
+                onServiceClosed = { processIntent(SongPlayerIntent.CloseSong) }
             )
 
             startProgressUpdate()
@@ -48,6 +49,8 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
             isServiceBound = false
             mediaPlayerService = null
             progressJob?.cancel()
+
+            _nowPlayingState.update { SongPlayerState() }
         }
     }
 
@@ -136,6 +139,19 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
             SongPlayerIntent.ToggleRepeat -> {
                 val newRepeatMode = playbackQueueManager.toggleRepeat()
                 _nowPlayingState.update { it.copy(repeatMode = newRepeatMode) }
+            }
+
+            SongPlayerIntent.CloseSong -> {
+                mediaPlayerService?.get()?.stopSong()
+
+                _nowPlayingState.update {
+                    SongPlayerState(
+                        nowPlayingSong = null,
+                        isPlaying = false,
+                        isShuffling = false,
+                        repeatMode = RepeatMode.OFF
+                    )
+                }
             }
         }
     }

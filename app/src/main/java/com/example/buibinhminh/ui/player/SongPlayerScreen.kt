@@ -29,7 +29,10 @@ fun SongPlayerScreen(
             isShuffling = playerState.isShuffling,
             repeatMode = playerState.repeatMode,
             onBackClick = onBackClick,
-            onCloseClick = { },
+            onCloseClick = {
+                playerViewModel.processIntent(SongPlayerIntent.CloseSong)
+                onBackClick()
+            },
             onPlayPauseClick = {
                 if (playerState.isPlaying) {
                     playerViewModel.processIntent(SongPlayerIntent.PauseSong)
