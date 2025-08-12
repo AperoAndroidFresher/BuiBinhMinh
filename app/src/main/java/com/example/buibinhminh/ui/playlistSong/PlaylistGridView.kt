@@ -19,6 +19,7 @@ fun PlaylistGrid(
     playerViewModel: SongPlayerViewModel,
     nowPlayingSongId: Long?,
     isPlaying: Boolean,
+    onSongClick: (Song) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -38,7 +39,8 @@ fun PlaylistGrid(
                 options = playlistOptions,
                 playerViewModel = playerViewModel,
                 isPlaying = isCurrentSong && isPlaying,
-                isCurrentSong = isCurrentSong
+                isCurrentSong = isCurrentSong,
+                onSongClick = { onSongClick(song) }
             )
         }
     }

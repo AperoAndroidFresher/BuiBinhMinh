@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.service.MediaPlayerService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -28,17 +27,32 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
     private var isServiceBound = false
     private var progressJob: Job? = null
 
+    private val playbackQueueManager = PlaybackQueueManager()
+
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as MediaPlayerService.MusicBinder
+
             mediaPlayerService = WeakReference(binder.getService())
             isServiceBound = true
+
+            binder.setPlayerListeners(
+                onSkipNext = { processIntent(SongPlayerIntent.SkipNext) },
+                onSkipPrevious = { processIntent(SongPlayerIntent.SkipPrevious) },
+                onSongCompletion = { processIntent(SongPlayerIntent.SongFinished) },
+                onServiceClosed = { processIntent(SongPlayerIntent.CloseSong) },
+                onSongPaused = { processIntent(SongPlayerIntent.PauseSong) },
+                onSongResumed = { processIntent(SongPlayerIntent.ResumeSong) }
+            )
+
             startProgressUpdate()
         }
         override fun onServiceDisconnected(name: ComponentName?) {
             isServiceBound = false
             mediaPlayerService = null
             progressJob?.cancel()
+
+            _nowPlayingState.update { SongPlayerState() }
         }
     }
 
@@ -61,23 +75,87 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
         progressJob?.cancel()
     }
 
-    fun playSong(song: Song) {
-        mediaPlayerService?.get()?.playSong(song)
-        _nowPlayingState.update { it.copy(nowPlayingSong = song, isPlaying = true) }
-    }
+    fun processIntent(intent: SongPlayerIntent) {
+        when (intent) {
+            is SongPlayerIntent.PlaySong -> {
+                val song = intent.song
+                mediaPlayerService?.get()?.playSong(song)
+                _nowPlayingState.update { it.copy(nowPlayingSong = song, isPlaying = true) }
+            }
 
-    fun seekTo(position: Long) {
-        mediaPlayerService?.get()?.seekTo(position.toInt())
-    }
+            is SongPlayerIntent.SetQueueAndPlay -> {
+                val songs = intent.songs
+                val startSong = intent.startSong
+                val startIndex = songs.indexOf(startSong)
 
-    fun pauseSong() {
-        mediaPlayerService?.get()?.pauseSong()
-        _nowPlayingState.update { it.copy(isPlaying = false) }
-    }
+                playbackQueueManager.setQueue(songs, startIndex)
 
-    fun resumeSong() {
-        mediaPlayerService?.get()?.resumeSong()
-        _nowPlayingState.update { it.copy(isPlaying = true) }
+                processIntent(SongPlayerIntent.PlaySong(startSong))
+            }
+
+            SongPlayerIntent.PauseSong -> {
+                mediaPlayerService?.get()?.pauseSong()
+                _nowPlayingState.update { it.copy(isPlaying = false) }
+            }
+
+            SongPlayerIntent.ResumeSong -> {
+                mediaPlayerService?.get()?.resumeSong()
+                _nowPlayingState.update { it.copy(isPlaying = true) }
+            }
+
+            is SongPlayerIntent.SeekTo -> {
+                mediaPlayerService?.get()?.seekTo(intent.position.toInt())
+            }
+
+            SongPlayerIntent.SkipNext -> {
+                val nextSong = playbackQueueManager.skipToNext()
+                if (nextSong != null) {
+                    processIntent(SongPlayerIntent.PlaySong(nextSong))
+                }
+            }
+
+            SongPlayerIntent.SkipPrevious -> {
+                val previousSong = playbackQueueManager.skipToPrevious()
+                if (previousSong != null) {
+                    processIntent(SongPlayerIntent.PlaySong(previousSong))
+                }
+            }
+
+            SongPlayerIntent.SongFinished -> {
+                val nextSong = playbackQueueManager.skipToNext()
+                if (nextSong != null) {
+                    processIntent(SongPlayerIntent.PlaySong(nextSong))
+                } else {
+                    mediaPlayerService?.get()?.pauseSong()
+                    _nowPlayingState.update { it.copy(isPlaying = false) }
+                }
+            }
+
+            SongPlayerIntent.ToggleShuffle -> {
+                val isShuffling = playbackQueueManager.toggleShuffle()
+                _nowPlayingState.update { it.copy(isShuffling = isShuffling) }
+                val nowPlaying = playbackQueueManager.getNowPlayingSong()
+                _nowPlayingState.update { it.copy(nowPlayingSong = nowPlaying) }
+            }
+
+            SongPlayerIntent.ToggleRepeat -> {
+                val newRepeatMode = playbackQueueManager.toggleRepeat()
+                _nowPlayingState.update { it.copy(repeatMode = newRepeatMode) }
+            }
+
+            SongPlayerIntent.CloseSong -> {
+                mediaPlayerService?.get()?.stopSong()
+
+                _nowPlayingState.update {
+                    SongPlayerState(
+                        nowPlayingSong = null,
+                        isPlaying = false,
+                        isShuffling = false,
+                        repeatMode = RepeatMode.OFF
+                    )
+                }
+            }
+        }
     }
 
     private fun startProgressUpdate() {
@@ -95,7 +173,7 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
                         songProgress = progress
                     )
                 }
-                delay(1000L)
+                delay(500L)
             }
         }
     }

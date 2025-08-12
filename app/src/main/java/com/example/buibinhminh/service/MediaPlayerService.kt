@@ -5,31 +5,32 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import androidx.compose.ui.res.painterResource
 import androidx.core.app.NotificationCompat
-import coil.compose.rememberAsyncImagePainter
 import com.example.buibinhminh.MainActivity
 import com.example.buibinhminh.R
 import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.helper.getEmbeddedThumbnail
-import kotlin.jvm.java
 
 class MediaPlayerService : Service() {
     private val binder = MusicBinder()
     private var mediaPlayer: MediaPlayer? = null
     private var currentSong: Song? = null
 
+    private var onSkipNext: (() -> Unit)? = null
+    private var onSkipPrevious: (() -> Unit)? = null
+    private var onSongCompletion: (() -> Unit)? = null
+    private var onServiceClosed: (() -> Unit)? = null
+    private var onSongPaused: (() -> Unit)? = null
+    private var onSongResumed: (() -> Unit)? = null
+
     companion object {
         const val NOTIFICATION_ID = 1
         const val CHANNEL_ID = "MusicPlayerChannel"
-        const val ACTION_PLAY = "ACTION_PLAY"
         const val ACTION_PAUSE = "ACTION_PAUSE"
         const val ACTION_RESUME = "ACTION_RESUME"
         const val ACTION_SKIP_NEXT = "ACTION_SKIP_NEXT"
@@ -39,6 +40,23 @@ class MediaPlayerService : Service() {
 
     inner class MusicBinder : Binder() {
         fun getService(): MediaPlayerService = this@MediaPlayerService
+        fun setPlayerListeners(
+            onSkipNext: () -> Unit,
+            onSkipPrevious: () -> Unit,
+            onSongCompletion: () -> Unit,
+            onServiceClosed: () -> Unit,
+            onSongPaused: () -> Unit,
+            onSongResumed: () -> Unit
+        ) {
+            getService().setPlayerListeners(
+                onSkipNext,
+                onSkipPrevious,
+                onSongCompletion,
+                onServiceClosed,
+                onSongPaused,
+                onSongResumed
+            )
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder {
@@ -47,14 +65,11 @@ class MediaPlayerService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_PAUSE -> pauseSong()
-            ACTION_RESUME -> resumeSong()
-            ACTION_SKIP_NEXT -> {}
-            ACTION_SKIP_PREVIOUS -> {}
-            ACTION_STOP -> {
-                stopSelf()
-                stopForeground(STOP_FOREGROUND_REMOVE)
-            }
+            ACTION_PAUSE -> onSongPaused?.invoke()
+            ACTION_RESUME -> onSongResumed?.invoke()
+            ACTION_SKIP_NEXT -> onSkipNext?.invoke()
+            ACTION_SKIP_PREVIOUS -> onSkipPrevious?.invoke()
+            ACTION_STOP -> onServiceClosed?.invoke()
         }
         return START_NOT_STICKY
     }
@@ -70,6 +85,9 @@ class MediaPlayerService : Service() {
                 mp.start()
                 currentSong = song
                 startForeground(NOTIFICATION_ID, createNotification(true))
+            }
+            setOnCompletionListener {
+                onSongCompletion?.invoke()
             }
         }
     }
@@ -88,16 +106,44 @@ class MediaPlayerService : Service() {
         }
     }
 
+    fun stopSong() {
+        mediaPlayer?.let {
+            if (it.isPlaying) {
+                it.stop()
+            }
+            it.reset()
+            it.release()
+        }
+        mediaPlayer = null
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+    }
+
     fun seekTo(position: Int) {
         mediaPlayer?.seekTo(position)
     }
 
-    fun isPlaying(): Boolean = mediaPlayer?.isPlaying ?: false
+    fun isPlaying(): Boolean = mediaPlayer?.isPlaying == true
 
     fun getCurrentPosition(): Int = mediaPlayer?.currentPosition ?: 0
 
     fun getDuration(): Int = mediaPlayer?.duration ?: 0
 
+    fun setPlayerListeners(
+        onSkipNext: () -> Unit,
+        onSkipPrevious: () -> Unit,
+        onSongCompletion: () -> Unit,
+        onServiceClosed: () -> Unit,
+        onSongPaused: () -> Unit,
+        onSongResumed: () -> Unit
+    ) {
+        this.onSkipNext = onSkipNext
+        this.onSkipPrevious = onSkipPrevious
+        this.onSongCompletion = onSongCompletion
+        this.onServiceClosed = onServiceClosed
+        this.onSongPaused = onSongPaused
+        this.onSongResumed = onSongResumed
+    }
 
     private fun createNotification(isPlaying: Boolean): Notification {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -106,7 +152,7 @@ class MediaPlayerService : Service() {
                 "Music Player",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Thông báo điều khiển trình phát nhạc"
+                description = "Song player notification"
             }
             getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
@@ -119,7 +165,7 @@ class MediaPlayerService : Service() {
             if (isPlaying) R.drawable.round_pause_24 else R.drawable.baseline_play_arrow_24
         val playPauseAction = if (isPlaying) ACTION_PAUSE else ACTION_RESUME
 
-        val songTitle = currentSong?.title ?: "Unknow title"
+        val songTitle = currentSong?.title ?: "Unknown title"
         val songArtist = currentSong?.artist ?: "Unknown artist"
         val thumbnailBitmap = currentSong?.let {
             getEmbeddedThumbnail(it.contentUri, this)
@@ -166,14 +212,16 @@ class MediaPlayerService : Service() {
 
     private fun updateNotification(isPlaying: Boolean) {
         val notification = createNotification(isPlaying)
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(NOTIFICATION_ID, notification)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        mediaPlayer?.stop()
         mediaPlayer?.release()
         mediaPlayer = null
+        currentSong = null
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
 

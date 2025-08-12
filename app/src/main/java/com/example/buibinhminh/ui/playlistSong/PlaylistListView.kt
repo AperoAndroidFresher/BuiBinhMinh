@@ -18,6 +18,7 @@ fun PlaylistListView(
     playerViewModel: SongPlayerViewModel,
     nowPlayingSongId: Long?,
     isPlaying: Boolean,
+    onSongClick: (Song) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -35,7 +36,8 @@ fun PlaylistListView(
                 options = playlistOptions,
                 playerViewModel = playerViewModel,
                 isPlaying = isCurrentSong && isPlaying,
-                isCurrentSong = isCurrentSong
+                isCurrentSong = isCurrentSong,
+                onSongClick = { onSongClick(song) }
             )
         }
     }

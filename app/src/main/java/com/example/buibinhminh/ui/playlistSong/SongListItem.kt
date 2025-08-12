@@ -4,12 +4,15 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +33,8 @@ import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.helper.formatDuration
 import com.example.buibinhminh.helper.getEmbeddedThumbnail
+import com.example.buibinhminh.ui.animation.PlayingAnimation
+import com.example.buibinhminh.ui.player.SongPlayerIntent
 import com.example.buibinhminh.ui.player.SongPlayerViewModel
 import com.example.buibinhminh.ui.shared.GenericOptionMenu
 
@@ -39,7 +44,8 @@ fun SongListItem(
     options: List<MenuOption>,
     playerViewModel: SongPlayerViewModel,
     isPlaying: Boolean,
-    isCurrentSong: Boolean
+    isCurrentSong: Boolean,
+    onSongClick: (Song) -> Unit
 ) {
     val context = LocalContext.current
     val thumbnailBitmap = remember(song.id) {
@@ -62,12 +68,12 @@ fun SongListItem(
             .clickable {
                 if (isCurrentSong) {
                     if (isPlaying) {
-                        playerViewModel.pauseSong()
+                        playerViewModel.processIntent(SongPlayerIntent.PauseSong)
                     } else {
-                        playerViewModel.resumeSong()
+                        playerViewModel.processIntent(SongPlayerIntent.ResumeSong)
                     }
                 } else {
-                    playerViewModel.playSong(song)
+                    onSongClick(song)
                 }
             },
         horizontalArrangement = Arrangement.SpaceBetween
@@ -76,13 +82,26 @@ fun SongListItem(
             modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painter,
-                contentDescription = "Song",
+            Box(
                 modifier = Modifier
                     .padding(8.dp)
-                    .clip(RoundedCornerShape(10.dp))
-            )
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(10.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painter,
+                    contentDescription = "Song",
+                    modifier = Modifier.fillMaxSize()
+                )
+                if (isPlaying) {
+                    PlayingAnimation(
+                        modifier = Modifier
+                            .fillMaxSize(0.9f)
+                            .align(Alignment.Center)
+                    )
+                }
+            }
             Column(
                 modifier = Modifier
                     .fillMaxHeight()

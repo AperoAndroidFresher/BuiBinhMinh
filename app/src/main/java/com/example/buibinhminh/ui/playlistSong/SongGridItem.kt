@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,6 +31,8 @@ import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.helper.formatDuration
 import com.example.buibinhminh.helper.getEmbeddedThumbnail
+import com.example.buibinhminh.ui.animation.PlayingAnimation
+import com.example.buibinhminh.ui.player.SongPlayerIntent
 import com.example.buibinhminh.ui.player.SongPlayerViewModel
 import com.example.buibinhminh.ui.shared.GenericOptionMenu
 
@@ -39,7 +42,8 @@ fun SongGridItem(
     options: List<MenuOption>,
     playerViewModel: SongPlayerViewModel,
     isPlaying: Boolean,
-    isCurrentSong: Boolean
+    isCurrentSong: Boolean,
+    onSongClick: (Song) -> Unit
 ) {
     val context = LocalContext.current
     val thumbnailBitmap = remember(song.id) {
@@ -58,42 +62,50 @@ fun SongGridItem(
         modifier = Modifier
             .width(200.dp)
             .height(300.dp)
-            .padding(16.dp).background(backgroundColor)
+            .padding(16.dp)
+            .background(backgroundColor)
             .clickable {
                 if (isCurrentSong) {
                     if (isPlaying) {
-                        playerViewModel.pauseSong()
+                        playerViewModel.processIntent(SongPlayerIntent.PauseSong)
                     } else {
-                        playerViewModel.resumeSong()
+                        playerViewModel.processIntent(SongPlayerIntent.ResumeSong)
                     }
                 } else {
-                    playerViewModel.playSong(song)
+                    onSongClick(song)
+                    playerViewModel.processIntent(SongPlayerIntent.PlaySong(song))
                 }
             },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = Modifier
-                .padding(bottom = 8.dp)
+                .padding(8.dp)
+                .size(150.dp)
+                .clip(RoundedCornerShape(10.dp))
         ) {
             Image(
                 painter = painter,
                 contentDescription = "Song",
-                modifier = Modifier
-                    .padding(8.dp)
-                    .clip(RoundedCornerShape(10.dp))
+                modifier = Modifier.fillMaxSize()
             )
+            if (isCurrentSong && isPlaying) {
+                PlayingAnimation(
+                    modifier = Modifier
+                        .fillMaxSize(0.9f)
+                        .align(Alignment.Center)
+                )
+            }
             GenericOptionMenu(
                 options = options,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = 16.dp, end = 16.dp)
+                    .padding(8.dp)
                     .size(36.dp)
                     .clip(CircleShape)
                     .background(Color.Black.copy(alpha = 0.5f))
             )
         }
-
         Text(
             text = song.title,
             fontSize = 20.sp,
