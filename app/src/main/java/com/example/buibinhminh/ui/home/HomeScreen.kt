@@ -15,14 +15,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.buibinhminh.ui.profile.ProfileViewModel
 
-@Preview(
-    showBackground = true,
-    showSystemUi = true
-)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     onProfileClick: () -> Unit = {},
+    onNavigateToAlbums: () -> Unit,
     profileViewModel: ProfileViewModel = viewModel(),
     homeViewModel: HomeViewModel = viewModel()
 ) {
@@ -49,7 +46,7 @@ fun HomeScreen(
             item {
                 TopAlbumHome(
                     albums = albums,
-                    onSeeAllClick = {  }
+                    onSeeAllClick = { onNavigateToAlbums() }
                 )
             }
             item {

@@ -56,6 +56,7 @@ import com.example.buibinhminh.ui.authen.signup.SignUpScreenMVI
 import com.example.buibinhminh.ui.authen.signup.SignUpViewModel
 import com.example.buibinhminh.ui.home.HomeScreen
 import com.example.buibinhminh.ui.home.HomeViewModel
+import com.example.buibinhminh.ui.home.TopAlbumsScreen
 import com.example.buibinhminh.ui.library.LibraryScreen
 import com.example.buibinhminh.ui.library.LibraryViewModel
 import com.example.buibinhminh.ui.myplaylist.MyPlaylistScreen
@@ -82,6 +83,7 @@ fun FinalAppNavigation() {
     val profileRepository = remember { ProfileRepository(db.profileDao()) }
     val playlistRepository = remember { PlaylistRepository(db.playlistDao(), db.songDao()) }
     val homeRepository = remember { HomeRepository() }
+    val homeViewModel = remember { HomeViewModel(homeRepository) }
 
     val backStack = remember { mutableStateListOf<Screen>() }
     val bottomNavItems = listOf(Home, Library, Playlist)
@@ -209,13 +211,21 @@ fun FinalAppNavigation() {
                     }
                     entry<Screen.Home> { (userId) ->
                         val viewModel = remember { ProfileViewModel(userId, profileRepository) }
-                        val homeViewModel = remember { HomeViewModel(homeRepository) }
                         HomeScreen(
                             profileViewModel = viewModel,
                             homeViewModel = homeViewModel,
                             onProfileClick = {
                                 backStack.add(Screen.Profile(userId = userId))
+                            },
+                            onNavigateToAlbums = {
+                                backStack.add(Screen.TopAlbums)
                             }
+                        )
+                    }
+                    entry<Screen.TopAlbums> {
+                        TopAlbumsScreen(
+                            homeViewModel = homeViewModel,
+                            onBackClick = { backStack.removeLastOrNull() }
                         )
                     }
                     entry<Screen.MyPlaylist> {
@@ -277,6 +287,7 @@ fun FinalAppNavigation() {
                         val viewModel = remember { ProfileViewModel(userId, profileRepository) }
                         ProfileScreenMVI(viewModel = viewModel)
                     }
+
                 },
                 transitionSpec = {
                     slideInHorizontally(initialOffsetX = { it }) togetherWith
@@ -358,7 +369,7 @@ fun SongProgressBar(
                 )
 
             }
-            Row (
+            Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(

@@ -3,6 +3,7 @@ package com.example.buibinhminh.ui.home
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,7 +35,7 @@ fun TopAlbumsItem(
     Card(
         modifier = modifier
             .padding(8.dp)
-            .width(200.dp)
+            .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp)),
         colors = CardDefaults.cardColors(
             containerColor = Color(red = 67, green = 99, blue = 105, alpha = 51)
