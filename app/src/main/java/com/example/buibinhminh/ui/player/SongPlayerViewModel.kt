@@ -56,16 +56,6 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
         }
     }
 
-    init {
-        val intent = Intent(application, MediaPlayerService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            application.startForegroundService(intent)
-        } else {
-            application.startService(intent)
-        }
-        application.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
-    }
-
     override fun onCleared() {
         super.onCleared()
         if (isServiceBound) {
@@ -87,6 +77,18 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
                 val songs = intent.songs
                 val startSong = intent.startSong
                 val startIndex = songs.indexOf(startSong)
+
+                if (!isServiceBound) {
+                    val appContext = getApplication<Application>()
+                    val serviceIntent = Intent(appContext, MediaPlayerService::class.java)
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        appContext.startForegroundService(serviceIntent)
+                    } else {
+                        appContext.startService(serviceIntent)
+                    }
+                    appContext.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+                }
 
                 playbackQueueManager.setQueue(songs, startIndex)
 
