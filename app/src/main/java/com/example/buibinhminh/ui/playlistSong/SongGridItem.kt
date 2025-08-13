@@ -82,7 +82,7 @@ fun SongGridItem(
             modifier = Modifier
                 .padding(8.dp)
                 .size(150.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .clip(RoundedCornerShape(20.dp))
         ) {
             Image(
                 painter = painter,
@@ -111,7 +111,7 @@ fun SongGridItem(
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White,
-            modifier = Modifier.padding(bottom = 4.dp),
+            modifier = Modifier.padding(8.dp, 4.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -120,7 +120,7 @@ fun SongGridItem(
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color.Gray,
-            modifier = Modifier.padding(bottom = 8.dp),
+            modifier = Modifier.padding(8.dp, 0.dp, 8.dp, 8.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

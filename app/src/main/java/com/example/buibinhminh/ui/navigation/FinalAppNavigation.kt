@@ -372,7 +372,8 @@ fun SongProgressBar(
                     contentDescription = "Close",
                     tint = Color.White,
                     modifier = Modifier
-                        .padding(8.dp)
+                        .padding(4.dp)
+                        .size(32.dp)
                         .clickable {
                             playerViewModel.processIntent(SongPlayerIntent.CloseSong)
                         }
