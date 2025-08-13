@@ -40,13 +40,13 @@ fun ProfileImageBox(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         if (uri != null) {
-        val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
-        context.contentResolver.takePersistableUriPermission(uri, flag)
-    }
+            val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            context.contentResolver.takePersistableUriPermission(uri, flag)
+        }
         onImageChange(uri)
     }
 
-    Box{
+    Box {
         val imagePainter = rememberAsyncImagePainter(
             model = ImageRequest.Builder(context)
                 .data(currentImageUri ?: R.drawable.avatar)

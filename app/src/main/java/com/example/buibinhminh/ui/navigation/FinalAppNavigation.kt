@@ -45,6 +45,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.buibinhminh.R
 import com.example.buibinhminh.database.AppDatabase
 import com.example.buibinhminh.helper.formatDuration
+import com.example.buibinhminh.repository.HomeRepository
 import com.example.buibinhminh.repository.PlaylistRepository
 import com.example.buibinhminh.repository.ProfileRepository
 import com.example.buibinhminh.repository.UserRepository
@@ -54,6 +55,7 @@ import com.example.buibinhminh.ui.authen.login.LoginViewModel
 import com.example.buibinhminh.ui.authen.signup.SignUpScreenMVI
 import com.example.buibinhminh.ui.authen.signup.SignUpViewModel
 import com.example.buibinhminh.ui.home.HomeScreen
+import com.example.buibinhminh.ui.home.HomeViewModel
 import com.example.buibinhminh.ui.library.LibraryScreen
 import com.example.buibinhminh.ui.library.LibraryViewModel
 import com.example.buibinhminh.ui.myplaylist.MyPlaylistScreen
@@ -79,6 +81,7 @@ fun FinalAppNavigation() {
     val userRepository = remember { UserRepository(db.userDao()) }
     val profileRepository = remember { ProfileRepository(db.profileDao()) }
     val playlistRepository = remember { PlaylistRepository(db.playlistDao(), db.songDao()) }
+    val homeRepository = remember { HomeRepository() }
 
     val backStack = remember { mutableStateListOf<Screen>() }
     val bottomNavItems = listOf(Home, Library, Playlist)
@@ -205,7 +208,11 @@ fun FinalAppNavigation() {
                         )
                     }
                     entry<Screen.Home> { (userId) ->
+                        val viewModel = remember { ProfileViewModel(userId, profileRepository) }
+                        val homeViewModel = remember { HomeViewModel(homeRepository) }
                         HomeScreen(
+                            profileViewModel = viewModel,
+                            homeViewModel = homeViewModel,
                             onProfileClick = {
                                 backStack.add(Screen.Profile(userId = userId))
                             }

@@ -15,8 +15,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AppTheme {
-//                ProfileScreen()
-//                PlaylistScreen()
                 FinalAppNavigation()
             }
         }
