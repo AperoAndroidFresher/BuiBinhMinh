@@ -57,6 +57,8 @@ import com.example.buibinhminh.ui.authen.signup.SignUpViewModel
 import com.example.buibinhminh.ui.home.HomeScreen
 import com.example.buibinhminh.ui.home.HomeViewModel
 import com.example.buibinhminh.ui.home.TopAlbumsScreen
+import com.example.buibinhminh.ui.home.TopArtistsScreen
+import com.example.buibinhminh.ui.home.TopTracksScreen
 import com.example.buibinhminh.ui.library.LibraryScreen
 import com.example.buibinhminh.ui.library.LibraryViewModel
 import com.example.buibinhminh.ui.myplaylist.MyPlaylistScreen
@@ -219,11 +221,29 @@ fun FinalAppNavigation() {
                             },
                             onNavigateToAlbums = {
                                 backStack.add(Screen.TopAlbums)
+                            },
+                            onNavigateToTracks = {
+                                backStack.add(Screen.TopTracks)
+                            },
+                            onNavigateToArtists = {
+                                backStack.add(Screen.TopAlbums)
                             }
                         )
                     }
                     entry<Screen.TopAlbums> {
                         TopAlbumsScreen(
+                            homeViewModel = homeViewModel,
+                            onBackClick = { backStack.removeLastOrNull() }
+                        )
+                    }
+                    entry<Screen.TopTracks> {
+                        TopTracksScreen(
+                            homeViewModel = homeViewModel,
+                            onBackClick = { backStack.removeLastOrNull() }
+                        )
+                    }
+                    entry<Screen.TopArtists> {
+                        TopArtistsScreen(
                             homeViewModel = homeViewModel,
                             onBackClick = { backStack.removeLastOrNull() }
                         )

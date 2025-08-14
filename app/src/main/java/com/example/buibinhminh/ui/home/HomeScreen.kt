@@ -10,7 +10,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.buibinhminh.ui.profile.ProfileViewModel
@@ -20,6 +19,8 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onProfileClick: () -> Unit = {},
     onNavigateToAlbums: () -> Unit,
+    onNavigateToTracks: () -> Unit,
+    onNavigateToArtists: () -> Unit,
     profileViewModel: ProfileViewModel = viewModel(),
     homeViewModel: HomeViewModel = viewModel()
 ) {
@@ -52,13 +53,13 @@ fun HomeScreen(
             item {
                 TopTracksHome(
                     tracks = tracks,
-                    onSeeAllClick = {  }
+                    onSeeAllClick = { onNavigateToTracks() }
                 )
             }
             item {
                 TopArtistsHome(
                     artists = artists,
-                    onSeeAllClick = {  }
+                    onSeeAllClick = { onNavigateToArtists() }
                 )
             }
         }
