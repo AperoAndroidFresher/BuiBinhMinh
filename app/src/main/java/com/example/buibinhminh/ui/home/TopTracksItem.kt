@@ -1,26 +1,20 @@
 package com.example.buibinhminh.ui.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -43,10 +37,9 @@ fun TopTrackItem(
     track: Track,
     itemIndex: Int
 ) {
-
     Box(
         modifier = Modifier
-            .size(150.dp)
+            .size(175.dp)
             .padding(4.dp),
     ) {
         AsyncImage(
@@ -63,7 +56,7 @@ fun TopTrackItem(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             fontSize = 16.sp,
-            color = Color.White,
+            color = Color(0xff666666),
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(12.dp)
@@ -81,14 +74,14 @@ fun TopTrackItem(
                 Icon(
                     painter = painterResource(R.drawable.outline_hearing_24),
                     contentDescription = "Play count icon",
-                    tint = Color.White,
+                    tint = Color(0xff666666),
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.padding(end = 4.dp))
                 Text(
                     text = "${track.playcount}",
                     fontSize = 12.sp,
-                    color = Color.White,
+                    color = Color(0xff666666),
                 )
             }
             Row(
@@ -98,14 +91,14 @@ fun TopTrackItem(
                 Icon(
                     painter = painterResource(R.drawable.outline_artist_24),
                     contentDescription = "Play count icon",
-                    tint = Color.White,
+                    tint = Color(0xff666666),
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.padding(end = 4.dp))
                 Text(
                     text = track.artistName,
                     fontSize = 12.sp,
-                    color = Color.White
+                    color = Color(0xff666666),
                 )
             }
             Spacer(

@@ -1,17 +1,22 @@
 package com.example.buibinhminh.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.buibinhminh.ui.animation.LoadingAnimation
+import com.example.buibinhminh.ui.error.ErrorScreen
 import com.example.buibinhminh.ui.profile.ProfileViewModel
 
 @Composable
@@ -27,6 +32,9 @@ fun HomeScreen(
     val albums by homeViewModel.albums.collectAsState()
     val tracks by homeViewModel.tracks.collectAsState()
     val artists by homeViewModel.artists.collectAsState()
+    val isLoading by homeViewModel.isLoading.collectAsState()
+    val error by homeViewModel.error.collectAsState()
+
 
     Column(
         modifier = modifier
@@ -40,27 +48,47 @@ fun HomeScreen(
         )
         HomeTitle()
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            item {
-                TopAlbumHome(
-                    albums = albums,
-                    onSeeAllClick = { onNavigateToAlbums() }
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    LoadingAnimation(
+                        modifier = Modifier
+                            .size(200.dp)
+                            .align(Alignment.Center)
+                    )
+                }
+            }
+            error != null -> {
+                ErrorScreen(
+                    errorMessage = error!!,
+                    onRetry = { homeViewModel.fetchData() }
                 )
             }
-            item {
-                TopTracksHome(
-                    tracks = tracks,
-                    onSeeAllClick = { onNavigateToTracks() }
-                )
-            }
-            item {
-                TopArtistsHome(
-                    artists = artists,
-                    onSeeAllClick = { onNavigateToArtists() }
-                )
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    item {
+                        TopAlbumHome(
+                            albums = albums,
+                            onSeeAllClick = { onNavigateToAlbums() }
+                        )
+                    }
+                    item {
+                        TopTracksHome(
+                            tracks = tracks,
+                            onSeeAllClick = { onNavigateToTracks() }
+                        )
+                    }
+                    item {
+                        TopArtistsHome(
+                            artists = artists,
+                            onSeeAllClick = { onNavigateToArtists() }
+                        )
+                    }
+                }
             }
         }
     }

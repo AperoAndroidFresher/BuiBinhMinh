@@ -40,7 +40,7 @@ fun TopArtistItem(
             text = artist.name,
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,
-            color = Color.White,
+            color = Color(0xff666666),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.align(Alignment.TopStart).padding(16.dp)

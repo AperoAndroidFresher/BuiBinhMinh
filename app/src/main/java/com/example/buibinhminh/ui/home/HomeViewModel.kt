@@ -24,30 +24,31 @@ class HomeViewModel(
     private val _artists = MutableStateFlow<List<Artist>>(emptyList())
     val artists: StateFlow<List<Artist>> = _artists.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
     init {
-        fetchTopAlbums()
-        fetchTopTracks()
-        fetchTopArtists()
+        fetchData()
     }
 
-    private fun fetchTopAlbums() {
+    internal fun fetchData() {
         viewModelScope.launch {
-            val fetchedAlbums = repository.getAlbums()
-            _albums.value = fetchedAlbums
+            _isLoading.value = true
+            _error.value = null
+
+            try {
+                _albums.value = repository.getAlbums()
+                _tracks.value = repository.getTracks()
+                _artists.value = repository.getArtists()
+            } catch (e: Exception) {
+                _error.value = "Failed to load data. Please check your internet connection."
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
-    private fun fetchTopTracks() {
-        viewModelScope.launch {
-            val fetchedTracks = repository.getTracks()
-            _tracks.value = fetchedTracks
-        }
-    }
-
-    private fun fetchTopArtists() {
-        viewModelScope.launch {
-            val fetchedArtists = repository.getArtists()
-            _artists.value = fetchedArtists
-        }
-    }
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -25,7 +26,10 @@ fun TopListHeader(
     title : String = "Top Albums"
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+            .height(32.dp),
         horizontalArrangement = Arrangement.Start
     ) {
         Icon(

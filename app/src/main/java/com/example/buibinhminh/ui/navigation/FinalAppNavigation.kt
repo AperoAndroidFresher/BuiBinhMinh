@@ -226,7 +226,7 @@ fun FinalAppNavigation() {
                                 backStack.add(Screen.TopTracks)
                             },
                             onNavigateToArtists = {
-                                backStack.add(Screen.TopAlbums)
+                                backStack.add(Screen.TopArtists)
                             }
                         )
                     }
