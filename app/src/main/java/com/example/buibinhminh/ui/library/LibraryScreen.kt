@@ -194,7 +194,7 @@ fun LibraryScreen(
                             playerViewModel.processIntent(
                                 SongPlayerIntent.SetQueueAndPlay(state.songs, selectedSong)
                             )
-                        }
+                        },
                     )
                 }
             }

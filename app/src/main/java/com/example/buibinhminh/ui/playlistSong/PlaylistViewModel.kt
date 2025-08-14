@@ -50,6 +50,21 @@ class PlaylistViewModel(
                     playlistRepository.removeSongFromPlaylist(playlistId, intent.song.id)
                 }
             }
+            PlaylistIntent.ToggleSortMode -> {
+                val currentMode = _state.value.isSortMode
+                _state.value = _state.value.copy(isSortMode = !currentMode)
+            }
+            is PlaylistIntent.UpdateSongOrder -> {
+                val currentSongs = _state.value.songs.toMutableList()
+                val movedItem = currentSongs.removeAt(intent.fromIndex)
+                currentSongs.add(intent.toIndex, movedItem)
+                _state.value = _state.value.copy(songs = currentSongs)
+            }
+            PlaylistIntent.SaveSongOrder -> {
+                // Ví dụ: repository.updatePlaylistSongOrder(playlistId, _state.value.songs)
+                // Sau khi lưu, tắt chế độ sort
+                _state.value = _state.value.copy(isSortMode = false)
+            }
         }
     }
 

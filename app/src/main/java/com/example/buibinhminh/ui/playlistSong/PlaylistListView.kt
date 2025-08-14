@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.example.buibinhminh.data.MenuOption
 import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.ui.player.SongPlayerViewModel
+import com.example.buibinhminh.ui.playlistSong.dragdrop.DragDropList
 
 @Composable
 fun PlaylistListView(
@@ -19,26 +20,48 @@ fun PlaylistListView(
     nowPlayingSongId: Long?,
     isPlaying: Boolean,
     onSongClick: (Song) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isSortMode: Boolean = false,
+    onMove: (Int, Int) -> Unit = { _, _ -> }
 ) {
-    LazyColumn(
-        modifier = modifier.padding(horizontal = 16.dp)
-    ) {
-        itemsIndexed(
-            songs,
-            key = { index , song -> song.id }
-        ) { index, song ->
-            val playlistOptions = remember(song) { optionsProvider(song) }
+    if (isSortMode) {
+        DragDropList(
+            items = songs,
+            onMove = onMove,
+            modifier = modifier.padding(horizontal = 16.dp)
+        ) { song, isDragging ->
             val isCurrentSong = song.id == nowPlayingSongId
-
             SongListItem(
                 song = song,
-                options = playlistOptions,
+                options = optionsProvider(song),
                 playerViewModel = playerViewModel,
                 isPlaying = isCurrentSong && isPlaying,
                 isCurrentSong = isCurrentSong,
-                onSongClick = { onSongClick(song) }
+                onSongClick = {  },
+                isSortMode = true
             )
+        }
+    } else {
+        LazyColumn(
+            modifier = modifier.padding(horizontal = 16.dp)
+        ) {
+            itemsIndexed(
+                songs,
+                key = { index, song -> song.id }
+            ) { index, song ->
+                val playlistOptions = remember(song) { optionsProvider(song) }
+                val isCurrentSong = song.id == nowPlayingSongId
+
+                SongListItem(
+                    song = song,
+                    options = playlistOptions,
+                    playerViewModel = playerViewModel,
+                    isPlaying = isCurrentSong && isPlaying,
+                    isCurrentSong = isCurrentSong,
+                    onSongClick = { onSongClick(song) },
+                    isSortMode = false
+                )
+            }
         }
     }
 }

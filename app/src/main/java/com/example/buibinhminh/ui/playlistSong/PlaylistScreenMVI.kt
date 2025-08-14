@@ -87,7 +87,13 @@ fun PlaylistContent(
         tittle = playlist.name,
         isGrid = state.isGridView,
         onToggleGrid = { viewModel.processIntent(PlaylistIntent.ToggleViewMode) },
-        onSortClick = { /* TODO: Sort function */ }
+        onSortClick = {
+            if (state.isSortMode) {
+                viewModel.processIntent(PlaylistIntent.SaveSongOrder)
+            } else {
+                viewModel.processIntent(PlaylistIntent.ToggleSortMode)
+            }
+        }
     )
 
     val playlistOptionsProvider = remember {
@@ -124,6 +130,10 @@ fun PlaylistContent(
                 playerViewModel.processIntent(
                     SongPlayerIntent.SetQueueAndPlay(state.songs, selectedSong)
                 )
+            },
+            isSortMode = state.isSortMode,
+            onMove = { from, to ->
+                viewModel.processIntent(PlaylistIntent.UpdateSongOrder(from, to))
             }
         )
     } else {
