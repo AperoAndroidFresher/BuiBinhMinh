@@ -27,7 +27,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun ProfileScreenMVI(
-    viewModel: ProfileViewModel = viewModel()
+    viewModel: ProfileViewModel = viewModel(),
+    onLogOutClick: () -> Unit
 ) {
     val viewState by viewModel.viewState.collectAsState()
 
@@ -133,7 +134,7 @@ fun ProfileScreenMVI(
                     "DESCRIBE YOURSELF",
                     "Enter a description about yourself...",
                     modifier = Modifier.padding(16.dp, 8.dp),
-                    minLines = 5,
+                    minLines = 3,
                     value = viewState.description,
                     isValidationEnabled = false,
                     isEditable = viewState.isEditing,
@@ -146,9 +147,7 @@ fun ProfileScreenMVI(
                     }
                 )
 
-
-
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             if (viewState.isEditing) {
                 Button(
@@ -159,7 +158,7 @@ fun ProfileScreenMVI(
                     modifier = Modifier
                         .fillMaxWidth(0.5f)
                         .height(64.dp)
-                        .padding(16.dp),
+                        .padding(12.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceTint,
@@ -171,6 +170,24 @@ fun ProfileScreenMVI(
                     } else {
                         Text(text = "Submit", fontSize = 18.sp)
                     }
+                }
+            } else {
+                Button(
+                    onClick = {
+                        onLogOutClick()
+                    },
+                    enabled = viewState.canSubmit,
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .height(64.dp)
+                        .padding(12.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceTint,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
+                    )
+                ){
+                    Text(text = "Log out", fontSize = 18.sp)
                 }
             }
         }

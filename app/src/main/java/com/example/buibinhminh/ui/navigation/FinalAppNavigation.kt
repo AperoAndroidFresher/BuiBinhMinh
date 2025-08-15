@@ -305,9 +305,15 @@ fun FinalAppNavigation() {
                     }
                     entry<Screen.Profile> { (userId) ->
                         val viewModel = remember { ProfileViewModel(userId, profileRepository) }
-                        ProfileScreenMVI(viewModel = viewModel)
+                        ProfileScreenMVI(
+                            viewModel = viewModel,
+                            onLogOutClick = {
+                                authViewModel.logout()
+                                backStack.clear()
+                                backStack.add(Screen.Login())
+                            }
+                        )
                     }
-
                 },
                 transitionSpec = {
                     slideInHorizontally(initialOffsetX = { it }) togetherWith

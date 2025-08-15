@@ -31,7 +31,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     val currentUser: StateFlow<UserEntity?> = _currentUser.asStateFlow()
 
     init {
-        // Khởi tạo ViewModel, đọc thông tin người dùng đã lưu từ SharedPreferences
         viewModelScope.launch {
             val userId = authManager.getSavedUserId()
             if (userId != null) {
@@ -52,10 +51,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-//    fun logout() {
-//        viewModelScope.launch {
-//            authManager.clearUser()
-//            _currentUser.value = null
-//        }
-//    }
+    fun logout() {
+        viewModelScope.launch {
+            authManager.clearUser()
+            _currentUser.value = null
+        }
+    }
 }

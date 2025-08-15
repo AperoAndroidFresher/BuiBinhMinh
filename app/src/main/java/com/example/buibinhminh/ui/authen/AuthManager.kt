@@ -29,7 +29,7 @@ class AuthManager(context: Context) {
         return if (id == -1) null else id
     }
 
-//    fun clearUser() {
-//        sharedPreferences.edit { clear() }
-//    }
+    fun clearUser() {
+        sharedPreferences.edit { clear() }
+    }
 }
