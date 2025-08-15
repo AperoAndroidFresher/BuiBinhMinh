@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -45,7 +46,8 @@ fun SongListItem(
     playerViewModel: SongPlayerViewModel,
     isPlaying: Boolean,
     isCurrentSong: Boolean,
-    onSongClick: (Song) -> Unit
+    onSongClick: (Song) -> Unit,
+    isSortMode: Boolean
 ) {
     val context = LocalContext.current
     val thumbnailBitmap = remember(song.id) {
@@ -65,7 +67,7 @@ fun SongListItem(
             .fillMaxWidth()
             .height(80.dp)
             .background(backgroundColor)
-            .clickable {
+            .clickable (enabled = !isSortMode){
                 if (isCurrentSong) {
                     if (isPlaying) {
                         playerViewModel.processIntent(SongPlayerIntent.PauseSong)
@@ -138,6 +140,14 @@ fun SongListItem(
                 fontSize = 17.sp,
                 color = Color.White
             )
+            if (isSortMode) {
+                Icon(
+                    painter = painterResource(R.drawable.outline_dehaze_24),
+                    contentDescription = "Drag",
+                    tint = Color.Gray,
+                    modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                )
+            }
             GenericOptionMenu(
                 options = options
             )

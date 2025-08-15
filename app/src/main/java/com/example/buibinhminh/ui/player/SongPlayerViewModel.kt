@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.buibinhminh.data.Song
 import com.example.buibinhminh.service.MediaPlayerService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -29,6 +30,8 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
 
     private val playbackQueueManager = PlaybackQueueManager()
 
+    private var songToPlayOnConnect: Song? = null
+
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as MediaPlayerService.MusicBinder
@@ -46,6 +49,13 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
             )
 
             startProgressUpdate()
+
+            songToPlayOnConnect?.let { song ->
+                playbackQueueManager.getNowPlayingSong()?.let {
+                    processIntent(SongPlayerIntent.PlaySong(it))
+                }
+                songToPlayOnConnect = null
+            }
         }
         override fun onServiceDisconnected(name: ComponentName?) {
             isServiceBound = false
@@ -54,16 +64,6 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
 
             _nowPlayingState.update { SongPlayerState() }
         }
-    }
-
-    init {
-        val intent = Intent(application, MediaPlayerService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            application.startForegroundService(intent)
-        } else {
-            application.startService(intent)
-        }
-        application.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
     }
 
     override fun onCleared() {
@@ -87,6 +87,19 @@ class SongPlayerViewModel (application: Application) : AndroidViewModel(applicat
                 val songs = intent.songs
                 val startSong = intent.startSong
                 val startIndex = songs.indexOf(startSong)
+
+                if (!isServiceBound) {
+                    songToPlayOnConnect = startSong
+                    val appContext = getApplication<Application>()
+                    val serviceIntent = Intent(appContext, MediaPlayerService::class.java)
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        appContext.startForegroundService(serviceIntent)
+                    } else {
+                        appContext.startService(serviceIntent)
+                    }
+                    appContext.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+                }
 
                 playbackQueueManager.setQueue(songs, startIndex)
 

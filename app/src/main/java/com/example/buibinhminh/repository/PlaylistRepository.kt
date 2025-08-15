@@ -34,10 +34,6 @@ class PlaylistRepository(
         playlistDao.deletePlaylistSong(crossRef)
     }
 
-    fun getPlaylistsForUser(userId: Int): Flow<List<PlaylistEntity>> {
-        return playlistDao.getPlaylistsForUser(userId)
-    }
-
     suspend fun insertPlaylist(playlist: PlaylistEntity): Long {
         return playlistDao.insertPlaylist(playlist)
     }

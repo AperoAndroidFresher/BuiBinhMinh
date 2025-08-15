@@ -83,7 +83,7 @@ class LibraryViewModel(
         if (_state.value.isLoading) return
         Log.d("MVI_DEBUG", "Processing Intent: LoadSongs")
 
-        _state.update { it.copy(isLoading = true, error = null) }
+        _state.update { it.copy(isLoading = true, error = null, songs = emptyList()) }
 
         viewModelScope.launch {
             try {
@@ -103,11 +103,11 @@ class LibraryViewModel(
     }
 
     private suspend fun loadRemoteSongs() {
-        _state.update { it.copy(isLoading = true, error = null) }
+        _state.update { it.copy(isLoading = true, error = null, songs = emptyList()) }
         val savedSongs = readSavedSongsFromInternalStorage(getApplication())
 
         if (savedSongs.isNotEmpty()) {
-            _state.update { it.copy(songs = savedSongs, isLoading = false) }
+            _state.update { it.copy(songs = savedSongs) }
         }
         try {
             val response = ApiClient.build().getSongs()

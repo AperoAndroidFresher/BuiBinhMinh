@@ -64,6 +64,7 @@ class MediaPlayerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startForeground(NOTIFICATION_ID, createNotification(false))
         when (intent?.action) {
             ACTION_PAUSE -> onSongPaused?.invoke()
             ACTION_RESUME -> onSongResumed?.invoke()

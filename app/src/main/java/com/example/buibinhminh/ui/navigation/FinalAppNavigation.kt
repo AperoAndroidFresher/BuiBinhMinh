@@ -45,6 +45,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.buibinhminh.R
 import com.example.buibinhminh.database.AppDatabase
 import com.example.buibinhminh.helper.formatDuration
+import com.example.buibinhminh.repository.HomeRepository
 import com.example.buibinhminh.repository.PlaylistRepository
 import com.example.buibinhminh.repository.ProfileRepository
 import com.example.buibinhminh.repository.UserRepository
@@ -54,6 +55,10 @@ import com.example.buibinhminh.ui.authen.login.LoginViewModel
 import com.example.buibinhminh.ui.authen.signup.SignUpScreenMVI
 import com.example.buibinhminh.ui.authen.signup.SignUpViewModel
 import com.example.buibinhminh.ui.home.HomeScreen
+import com.example.buibinhminh.ui.home.HomeViewModel
+import com.example.buibinhminh.ui.home.TopAlbumsScreen
+import com.example.buibinhminh.ui.home.TopArtistsScreen
+import com.example.buibinhminh.ui.home.TopTracksScreen
 import com.example.buibinhminh.ui.library.LibraryScreen
 import com.example.buibinhminh.ui.library.LibraryViewModel
 import com.example.buibinhminh.ui.myplaylist.MyPlaylistScreen
@@ -79,6 +84,8 @@ fun FinalAppNavigation() {
     val userRepository = remember { UserRepository(db.userDao()) }
     val profileRepository = remember { ProfileRepository(db.profileDao()) }
     val playlistRepository = remember { PlaylistRepository(db.playlistDao(), db.songDao()) }
+    val homeRepository = remember { HomeRepository() }
+    val homeViewModel = remember { HomeViewModel(homeRepository) }
 
     val backStack = remember { mutableStateListOf<Screen>() }
     val bottomNavItems = listOf(Home, Library, Playlist)
@@ -205,10 +212,40 @@ fun FinalAppNavigation() {
                         )
                     }
                     entry<Screen.Home> { (userId) ->
+                        val viewModel = remember { ProfileViewModel(userId, profileRepository) }
                         HomeScreen(
+                            profileViewModel = viewModel,
+                            homeViewModel = homeViewModel,
                             onProfileClick = {
                                 backStack.add(Screen.Profile(userId = userId))
+                            },
+                            onNavigateToAlbums = {
+                                backStack.add(Screen.TopAlbums)
+                            },
+                            onNavigateToTracks = {
+                                backStack.add(Screen.TopTracks)
+                            },
+                            onNavigateToArtists = {
+                                backStack.add(Screen.TopArtists)
                             }
+                        )
+                    }
+                    entry<Screen.TopAlbums> {
+                        TopAlbumsScreen(
+                            homeViewModel = homeViewModel,
+                            onBackClick = { backStack.removeLastOrNull() }
+                        )
+                    }
+                    entry<Screen.TopTracks> {
+                        TopTracksScreen(
+                            homeViewModel = homeViewModel,
+                            onBackClick = { backStack.removeLastOrNull() }
+                        )
+                    }
+                    entry<Screen.TopArtists> {
+                        TopArtistsScreen(
+                            homeViewModel = homeViewModel,
+                            onBackClick = { backStack.removeLastOrNull() }
                         )
                     }
                     entry<Screen.MyPlaylist> {
@@ -270,6 +307,7 @@ fun FinalAppNavigation() {
                         val viewModel = remember { ProfileViewModel(userId, profileRepository) }
                         ProfileScreenMVI(viewModel = viewModel)
                     }
+
                 },
                 transitionSpec = {
                     slideInHorizontally(initialOffsetX = { it }) togetherWith
@@ -351,7 +389,7 @@ fun SongProgressBar(
                 )
 
             }
-            Row (
+            Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -365,7 +403,8 @@ fun SongProgressBar(
                     contentDescription = "Close",
                     tint = Color.White,
                     modifier = Modifier
-                        .padding(8.dp)
+                        .padding(4.dp)
+                        .size(32.dp)
                         .clickable {
                             playerViewModel.processIntent(SongPlayerIntent.CloseSong)
                         }

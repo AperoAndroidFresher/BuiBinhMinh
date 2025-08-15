@@ -1,63 +1,95 @@
 package com.example.buibinhminh.ui.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.buibinhminh.R
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.buibinhminh.ui.animation.LoadingAnimation
+import com.example.buibinhminh.ui.error.ErrorScreen
+import com.example.buibinhminh.ui.profile.ProfileViewModel
 
-@Preview(
-    showBackground = true,
-    showSystemUi = true
-)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     onProfileClick: () -> Unit = {},
+    onNavigateToAlbums: () -> Unit,
+    onNavigateToTracks: () -> Unit,
+    onNavigateToArtists: () -> Unit,
+    profileViewModel: ProfileViewModel = viewModel(),
+    homeViewModel: HomeViewModel = viewModel()
 ) {
-    Box(
+    val albums by homeViewModel.albums.collectAsState()
+    val tracks by homeViewModel.tracks.collectAsState()
+    val artists by homeViewModel.artists.collectAsState()
+    val isLoading by homeViewModel.isLoading.collectAsState()
+    val error by homeViewModel.error.collectAsState()
+
+
+    Column(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xff121111))
-            .padding(16.dp, 32.dp, 16.dp, 16.dp),
-        contentAlignment = Alignment.TopCenter
+            .padding(16.dp, 32.dp, 16.dp, 16.dp)
     ) {
-        Text(
-            text = "HOME",
-            fontWeight = FontWeight.W500,
-            fontSize = 20.sp,
-            color = Color.White,
-            modifier = Modifier.padding(top = 4.dp)
+        HomeHeader(
+            onProfileClick = onProfileClick,
+            viewModel = profileViewModel
         )
-        Icon(
-            painter = painterResource(id = R.drawable.outline_person_24),
-            contentDescription = "Show Profile",
-            tint = Color.White,
-            modifier = Modifier
-                .size(30.dp)
-                .align(Alignment.TopEnd)
-                .padding(start = 4.dp)
-                .clickable { onProfileClick() }
-        )
+        HomeTitle()
 
-        LoadingAnimation(
-            modifier = Modifier
-                .size(200.dp)
-                .align(Alignment.Center)
-        )
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    LoadingAnimation(
+                        modifier = Modifier
+                            .size(200.dp)
+                            .align(Alignment.Center)
+                    )
+                }
+            }
+            error != null -> {
+                ErrorScreen(
+                    errorMessage = error!!,
+                    onRetry = { homeViewModel.fetchData() }
+                )
+            }
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    item {
+                        TopAlbumHome(
+                            albums = albums,
+                            onSeeAllClick = { onNavigateToAlbums() }
+                        )
+                    }
+                    item {
+                        TopTracksHome(
+                            tracks = tracks,
+                            onSeeAllClick = { onNavigateToTracks() }
+                        )
+                    }
+                    item {
+                        TopArtistsHome(
+                            artists = artists,
+                            onSeeAllClick = { onNavigateToArtists() }
+                        )
+                    }
+                }
+            }
+        }
     }
 }
